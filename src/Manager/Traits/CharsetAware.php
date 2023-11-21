@@ -2,6 +2,8 @@
 
 namespace Smalot\Cups\Manager\Traits;
 
+use Smalot\Cups\CupsException;
+
 /**
  * Trait CharsetAware
  *
@@ -18,7 +20,7 @@ trait CharsetAware
     /**
      * @return string
      */
-    public function getCharset()
+    public function getCharset(): string
     {
         return $this->charset;
     }
@@ -28,7 +30,7 @@ trait CharsetAware
      *
      * @return CharsetAware
      */
-    public function setCharset($charset)
+    public function setCharset(string $charset)
     {
         $this->charset = $charset;
 
@@ -37,17 +39,16 @@ trait CharsetAware
 
     /**
      * @return string
+     * @throws CupsException
      */
-    protected function buildCharset()
+    protected function buildCharset(): string
     {
         // Charset
         $charset = strtolower($this->getCharset());
-        $metaCharset = chr(0x47) // charset type | value-tag
+        return chr(0x47) // charset type | value-tag
           .chr(0x00).chr(0x12) // name-length
           .'attributes-charset' // attributes-charset | name
           .$this->builder->formatStringLength($charset) // value-length
           .$charset; // value
-
-        return $metaCharset;
     }
 }

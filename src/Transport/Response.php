@@ -15,17 +15,17 @@ class Response
     /**
      * @var string
      */
-    protected $ippVersion;
+    protected $ipp_version;
 
     /**
      * @var string
      */
-    protected $statusCode;
+    protected $status_code;
 
     /**
      * @var string
      */
-    protected $requestId;
+    protected $request_id;
 
     /**
      * @var array
@@ -40,16 +40,16 @@ class Response
     /**
      * Response constructor.
      *
-     * @param string $ippVersion
-     * @param string $statusCode
-     * @param string $requestId
-     * @param array $body
+     * @param string $ipp_version
+     * @param string $status_code
+     * @param string $request_id
+     * @param array  $body
      */
-    public function __construct($ippVersion, $statusCode, $requestId, $body)
+    public function __construct(string $ipp_version, string $status_code, string $request_id, array $body)
     {
-        $this->ippVersion = $ippVersion;
-        $this->statusCode = $statusCode;
-        $this->requestId = $requestId;
+        $this->ipp_version = $ipp_version;
+        $this->status_code = $status_code;
+        $this->request_id = $request_id;
         $this->body = $body;
 
         $this->values = $this->prepareValues($body);
@@ -58,17 +58,17 @@ class Response
     /**
      * @return string
      */
-    public function getIppVersion()
+    public function getIppVersion(): string
     {
-        return $this->ippVersion;
+        return $this->ipp_version;
     }
 
     /**
      * @return string
      */
-    public function getStatusCode()
+    public function getStatusCode(): string
     {
-        return $this->statusCode;
+        return $this->status_code;
     }
 
     /**
@@ -86,15 +86,15 @@ class Response
     /**
      * @return string
      */
-    public function getRequestId()
+    public function getRequestId(): string
     {
-        return $this->requestId;
+        return $this->request_id;
     }
 
     /**
      * @return array
      */
-    public function getBody()
+    public function getBody(): array
     {
         return $this->body;
     }
@@ -126,7 +126,7 @@ class Response
     /**
      * @return array
      */
-    public function getValues()
+    public function getValues(): array
     {
         $values = $this->values;
 
@@ -141,7 +141,7 @@ class Response
      *
      * @return array
      */
-    protected function prepareValues($list)
+    protected function prepareValues(array $list): array
     {
         unset($list['attributes']);
 

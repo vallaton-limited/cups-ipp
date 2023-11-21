@@ -31,7 +31,7 @@ class Job implements JobInterface
     /**
      * @var string
      */
-    protected $printerUri;
+    protected $printer_uri;
 
     /**
      * @var string
@@ -46,7 +46,7 @@ class Job implements JobInterface
     /**
      * @var string
      */
-    protected $pageRanges;
+    protected $page_ranges;
 
     /**
      * @var int
@@ -76,7 +76,7 @@ class Job implements JobInterface
     /**
      * @var string
      */
-    protected $stateReason;
+    protected $state_reason;
 
     /**
      * Job constructor.
@@ -90,7 +90,7 @@ class Job implements JobInterface
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -100,7 +100,7 @@ class Job implements JobInterface
      *
      * @return Job
      */
-    public function setId($id)
+    public function setId(int $id): JobInterface
     {
         $this->id = $id;
 
@@ -110,19 +110,19 @@ class Job implements JobInterface
     /**
      * @return string
      */
-    public function getPrinterUri()
+    public function getPrinterUri(): string
     {
-        return $this->printerUri;
+        return $this->printer_uri;
     }
 
     /**
-     * @param string $printerUri
+     * @param string $printer_uri
      *
      * @return Job
      */
-    public function setPrinterUri($printerUri)
+    public function setPrinterUri(string $printer_uri): JobInterface
     {
-        $this->printerUri = $printerUri;
+        $this->printer_uri = $printer_uri;
 
         return $this;
     }
@@ -130,7 +130,7 @@ class Job implements JobInterface
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -140,7 +140,7 @@ class Job implements JobInterface
      *
      * @return Job
      */
-    public function setName($name)
+    public function setName(string $name): JobInterface
     {
         $this->name = $name;
 
@@ -150,7 +150,7 @@ class Job implements JobInterface
     /**
      * @return string
      */
-    public function getUsername()
+    public function getUsername(): string
     {
         return $this->username;
     }
@@ -160,7 +160,7 @@ class Job implements JobInterface
      *
      * @return Job
      */
-    public function setUsername($username)
+    public function setUsername(string $username): JobInterface
     {
         $this->username = $username;
 
@@ -170,19 +170,19 @@ class Job implements JobInterface
     /**
      * @return string
      */
-    public function getPageRanges()
+    public function getPageRanges(): string
     {
-        return $this->pageRanges;
+        return $this->page_ranges;
     }
 
     /**
-     * @param string $pageRanges
+     * @param string $page_ranges
      *
      * @return Job
      */
-    public function setPageRanges($pageRanges)
+    public function setPageRanges(string $page_ranges = 'all'): JobInterface
     {
-        $this->pageRanges = $pageRanges;
+        $this->page_ranges = $page_ranges;
 
         return $this;
     }
@@ -190,7 +190,7 @@ class Job implements JobInterface
     /**
      * @return int
      */
-    public function getCopies()
+    public function getCopies(): int
     {
         return $this->copies;
     }
@@ -200,7 +200,7 @@ class Job implements JobInterface
      *
      * @return Job
      */
-    public function setCopies($copies)
+    public function setCopies(int $copies): JobInterface
     {
         $this->copies = $copies;
 
@@ -210,9 +210,9 @@ class Job implements JobInterface
     /**
      * @return int
      */
-    public function getSides()
+    public function getSides(): int
     {
-        return ($this->sides ?: self::SIDES_ONE_SIDED);
+        return $this->sides ?: self::SIDES_ONE_SIDED;
     }
 
     /**
@@ -220,7 +220,7 @@ class Job implements JobInterface
      *
      * @return Job
      */
-    public function setSides($sides)
+    public function setSides(int $sides): JobInterface
     {
         $this->sides = $sides;
 
@@ -230,7 +230,7 @@ class Job implements JobInterface
     /**
      * @return int
      */
-    public function getFidelity()
+    public function getFidelity(): int
     {
         return $this->fidelity;
     }
@@ -240,7 +240,7 @@ class Job implements JobInterface
      *
      * @return Job
      */
-    public function setFidelity($fidelity)
+    public function setFidelity(int $fidelity): JobInterface
     {
         $this->fidelity = $fidelity;
 
@@ -250,7 +250,7 @@ class Job implements JobInterface
     /**
      * @return array
      */
-    public function getContent()
+    public function getContent(): array
     {
         return $this->content;
     }
@@ -258,11 +258,11 @@ class Job implements JobInterface
     /**
      * @param string $filename
      * @param string $name
-     * @param string $mimeType
+     * @param string $mime_type
      *
      * @return Job
      */
-    public function addFile($filename, $name = '', $mimeType = 'application/octet-stream')
+    public function addFile(string $filename, string $name = '', string $mime_type = 'application/octet-stream'): JobInterface
     {
         if (empty($name)) {
             $name = basename($filename);
@@ -271,7 +271,7 @@ class Job implements JobInterface
         $this->content[] = [
           'type' => self::CONTENT_FILE,
           'name' => $name,
-          'mimeType' => $mimeType,
+          'mimeType' => $mime_type,
           'filename' => $filename,
         ];
 
@@ -281,16 +281,16 @@ class Job implements JobInterface
     /**
      * @param string $text
      * @param string $name
-     * @param string $mimeType
+     * @param string $mime_type
      *
      * @return Job
      */
-    public function addText($text, $name = '', $mimeType = 'text/plain')
+    public function addText(string $text, string $name = '', string $mime_type = 'text/plain'): JobInterface
     {
         $this->content[] = [
           'type' => self::CONTENT_TEXT,
           'name' => $name,
-          'mimeType' => $mimeType,
+          'mimeType' => $mime_type,
           'text' => $text,
         ];
 
@@ -300,7 +300,7 @@ class Job implements JobInterface
     /**
      * @return string
      */
-    public function getState()
+    public function getState(): string
     {
         return $this->state;
     }
@@ -310,7 +310,7 @@ class Job implements JobInterface
      *
      * @return Job
      */
-    public function setState($state)
+    public function setState(string $state): JobInterface
     {
         $this->state = $state;
 
@@ -320,19 +320,19 @@ class Job implements JobInterface
     /**
      * @return string
      */
-    public function getStateReason()
+    public function getStateReason(): string
     {
-        return $this->stateReason;
+        return $this->state_reason;
     }
 
     /**
-     * @param string $stateReason
+     * @param string $state_reason
      *
      * @return Job
      */
-    public function setStateReason($stateReason)
+    public function setStateReason(string $state_reason): JobInterface
     {
-        $this->stateReason = $stateReason;
+        $this->state_reason = $state_reason;
 
         return $this;
     }

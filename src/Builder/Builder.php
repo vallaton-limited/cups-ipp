@@ -16,29 +16,29 @@ class Builder
     /**
      * @var array
      */
-    protected $tagsTypes = [];
+    protected $tags_types = [];
 
     /**
      * @var array
      */
-    protected $operationTags = [];
+    protected $operation_tags = [];
 
     /**
      * @var array
      */
-    protected $jobTags = [];
+    protected $job_tags = [];
 
     /**
      * @var array
      */
-    protected $printerTags = [];
+    protected $printer_tags = [];
 
     /**
      * Builder constructor.
      *
-     * @param string $path
+     * @param null|string $path
      */
-    public function __construct($path = null)
+    public function __construct(string $path = null)
     {
         if (is_null($path)) {
             $path = __DIR__.'/../../config/';
@@ -50,30 +50,30 @@ class Builder
     /**
      * @param string $path
      */
-    protected function init($path)
+    protected function init(string $path)
     {
         $parser = new Parser();
 
         $content = file_get_contents($path.'type.yml');
-        $this->tagsTypes = $parser->parse($content);
+        $this->tags_types = $parser->parse($content);
 
         $content = file_get_contents($path.'operation.yml');
-        $this->operationTags = $parser->parse($content);
+        $this->operation_tags = $parser->parse($content);
 
         $content = file_get_contents($path.'job.yml');
-        $this->jobTags = $parser->parse($content);
+        $this->job_tags = $parser->parse($content);
 
         $content = file_get_contents($path.'printer.yml');
-        $this->printerTags = $parser->parse($content);
+        $this->printer_tags = $parser->parse($content);
     }
 
     /**
      * @param string $string
      *
      * @return string
-     * @throws \Smalot\Cups\CupsException
+     * @throws CupsException
      */
-    public function formatStringLength($string)
+    public function formatStringLength(string $string): string
     {
         $length = strlen($string);
 
@@ -99,9 +99,9 @@ class Builder
      * @param string $value
      *
      * @return string
-     * @throws \Smalot\Cups\CupsException
+     * @throws CupsException
      */
-    public function formatInteger($value)
+    public function formatInteger(string $value): string
     {
         if ($value >= 2147483647 || $value < -2147483648) {
             throw new CupsException('Values must be between -2147483648 and 2147483647.');
@@ -125,17 +125,16 @@ class Builder
             $int4 = chr($int4);
         }
 
-        $value = $int4.chr($int3).chr($int2).chr($int1);
-
-        return $value;
+        return $int4.chr($int3).chr($int2).chr($int1);
     }
 
     /**
      * @param string $range
      *
      * @return string
+     * @throws CupsException
      */
-    public function formatRangeOfInteger($range)
+    public function formatRangeOfInteger(string $range): string
     {
         $integers = preg_split('/[:-]/', $range);
 
@@ -150,8 +149,9 @@ class Builder
      * @param array $properties
      *
      * @return string
+     * @throws CupsException
      */
-    public function buildProperties($properties = [])
+    public function buildProperties(array $properties = []): string
     {
         $build = '';
 
@@ -164,16 +164,14 @@ class Builder
 
     /**
      * @param string $name
-     * @param mixed $values
-     * @param bool $emptyIfMissing
+     * @param mixed  $values
+     * @param bool   $empty_if_missing
      *
      * @return string
-     * @throws \Smalot\Cups\CupsException
+     * @throws CupsException
      */
-    public function buildProperty($name, $values, $emptyIfMissing = false)
+    public function buildProperty(string $name, $values, bool $empty_if_missing = false): string
     {
-        //        $emptyIfMissing = false;
-
         if (!is_array($values)) {
             $values = [$values];
         }
@@ -181,7 +179,7 @@ class Builder
         $build = '';
         $first = true;
         foreach ($values as $value) {
-            if (!empty($value) || !$emptyIfMissing) {
+            if (!empty($value) || !$empty_if_missing) {
                 $type = $this->getTypeFromProperty($name);
 
                 switch ($type['build']) {
@@ -242,7 +240,6 @@ class Builder
                 } else {
                     $build .= $type['tag']
                       .$this->formatStringLength('')
-                      .''
                       .$this->formatStringLength($value)
                       .$value;
                 }
@@ -256,16 +253,16 @@ class Builder
      * @param string $name
      *
      * @return array
-     * @throws \Smalot\Cups\CupsException
+     * @throws CupsException
      */
-    public function getTypeFromProperty($name)
+    public function getTypeFromProperty(string $name)
     {
         foreach (['operation', 'job', 'printer'] as $prefix) {
-            if (!empty($this->{$prefix.'Tags'}[$name])) {
-                $tag = $this->{$prefix.'Tags'}[$name]['tag'];
+            if (!empty($this->{$prefix.'_tags'}[$name])) {
+                $tag = $this->{$prefix.'_tags'}[$name]['tag'];
 
-                if (!empty($this->tagsTypes[$tag])) {
-                    return $this->tagsTypes[$tag];
+                if (!empty($this->tags_types[$tag])) {
+                    return $this->tags_types[$tag];
                 } else {
                     throw new CupsException('Type not found: "'.$tag.'".');
                 }

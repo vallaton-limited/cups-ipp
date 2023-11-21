@@ -13,166 +13,162 @@ interface JobInterface
     /**
      * @return int
      */
-    public function getId();
+    public function getId(): int;
 
     /**
      * @param int $id
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setId($id);
+    public function setId(int $id);
 
     /**
      * @return string
      */
-    public function getUri();
+    public function getUri(): string;
 
     /**
      * @param string $uri
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setUri($uri);
+    public function setUri(string $uri);
 
     /**
      * @return string
      */
-    public function getPrinterUri();
+    public function getPrinterUri(): string;
 
     /**
-     * @param string $printerUri
+     * @param string $printer_uri
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setPrinterUri($printerUri);
+    public function setPrinterUri(string $printer_uri);
 
     /**
      * @return string
      */
-    public function getName();
+    public function getName(): string;
 
     /**
      * @param string $name
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setName($name);
+    public function setName(string $name);
 
     /**
      * @return string
      */
-    public function getUsername();
+    public function getUsername(): string;
 
     /**
      * @param string $username
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setUsername($username);
+    public function setUsername(string $username);
 
     /**
      * @return string
      */
-    public function getPageRanges();
+    public function getPageRanges(): string;
 
     /**
-     * @param string $pageRanges
+     * @param string $page_ranges
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setPageRanges($pageRanges);
+    public function setPageRanges(string $page_ranges = 'all');
 
     /**
      * @return int
      */
-    public function getCopies();
+    public function getCopies(): int;
 
     /**
      * @param int $copies
      *
      * @return JobInterface
      */
-    public function setCopies($copies);
+    public function setCopies(int $copies);
 
     /**
      * @return int
      */
-    public function getSides();
+    public function getSides(): int;
 
     /**
      * @param int $sides
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setSides($sides);
+    public function setSides(int $sides);
 
     /**
      * @return int
      */
-    public function getFidelity();
+    public function getFidelity(): int;
 
     /**
      * @param int $fidelity
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setFidelity($fidelity);
+    public function setFidelity(int $fidelity);
 
     /**
      * @return array
      */
-    public function getContent();
+    public function getContent(): array;
 
     /**
      * @param string $filename
-     * @param string $mimeType
+     * @param string $mime_type
      * @param string $name
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function addFile($filename, $mimeType = 'application/octet-stream', $name = '');
+    public function addFile(string $filename, string $name = '', string $mime_type = 'application/octet-stream');
 
     /**
      * @param string $text
      * @param string $name
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function addText($text, $name = '');
+    public function addText(string $text, string $name = '');
 
     /**
      * @return array
      */
-    public function getAttributes();
+    public function getAttributes(): array;
 
     /**
      * @param array $attributes
      *
-     * @return JobInterface
+     * @return JobInterface|PrinterInterface
      */
-    public function setAttributes($attributes);
+    public function setAttributes(array $attributes);
 
     /**
      * @return string
      */
-    public function getState();
+    public function getState(): string;
 
     /**
      * @param string $state
-     *
-     * @return JobInterface
      */
-    public function setState($state);
+    public function setState(string $state);
 
     /**
      * @return string
      */
-    public function getStateReason();
+    public function getStateReason(): string;
 
     /**
-     * @param string $stateReason
-     *
-     * @return JobInterface
+     * @param string $state_reason
      */
-    public function setStateReason($stateReason);
+    public function setStateReason(string $state_reason);
 }

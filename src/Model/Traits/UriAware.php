@@ -2,6 +2,9 @@
 
 namespace Smalot\Cups\Model\Traits;
 
+use Smalot\Cups\Model\JobInterface;
+use Smalot\Cups\Model\PrinterInterface;
+
 /**
  * Trait UriAware
  *
@@ -18,7 +21,7 @@ trait UriAware
     /**
      * @return string
      */
-    public function getUri()
+    public function getUri(): string
     {
         return $this->uri;
     }
@@ -26,9 +29,9 @@ trait UriAware
     /**
      * @param string $uri
      *
-     * @return UriAware
+     * @return JobInterface|PrinterInterface
      */
-    public function setUri($uri)
+    public function setUri(string $uri): self
     {
         $this->uri = $uri;
 

@@ -33,12 +33,12 @@ class Client implements ClientInterface
     /**
      * @var HttpClient
      */
-    protected $httpClient;
+    protected $http_client;
 
     /**
      * @var string
      */
-    protected $authType;
+    protected $auth_type;
 
     /**
      * @var string
@@ -53,11 +53,11 @@ class Client implements ClientInterface
     /**
      * Client constructor.
      *
-     * @param string $username
-     * @param string $password
-     * @param array $socketClientOptions
+     * @param null|string $username
+     * @param null|string $password
+     * @param array       $socket_client_options
      */
-    public function __construct($username = null, $password = null, $socketClientOptions = [])
+    public function __construct(string $username = null, string $password = null, array $socket_client_options = [])
     {
         if (!is_null($username)) {
             $this->username = $username;
@@ -67,15 +67,15 @@ class Client implements ClientInterface
             $this->password = $password;
         }
 
-        if (empty($socketClientOptions['remote_socket'])) {
-            $socketClientOptions['remote_socket'] = self::SOCKET_URL;
+        if (empty($socket_client_options['remote_socket'])) {
+            $socket_client_options['remote_socket'] = self::SOCKET_URL;
         }
 
-        $messageFactory = new GuzzleMessageFactory();
-        $socketClient = new SocketHttpClient($messageFactory, $socketClientOptions);
-        $host = preg_match('/unix:\/\//', $socketClientOptions['remote_socket']) ? 'http://localhost' : $socketClientOptions['remote_socket'];
-        $this->httpClient = new PluginClient(
-          $socketClient, [
+        $message_factory = new GuzzleMessageFactory();
+        $socket_client = new SocketHttpClient($message_factory, $socket_client_options);
+        $host = preg_match('/unix:\/\//', $socket_client_options['remote_socket']) ? 'http://localhost' : $socket_client_options['remote_socket'];
+        $this->http_client = new PluginClient(
+          $socket_client, [
             new ErrorPlugin(),
             new ContentLengthPlugin(),
             new DecoderPlugin(),
@@ -83,7 +83,7 @@ class Client implements ClientInterface
           ]
         );
 
-        $this->authType = self::AUTHTYPE_BASIC;
+        $this->auth_type = self::AUTHTYPE_BASIC;
     }
 
     /**
@@ -92,7 +92,7 @@ class Client implements ClientInterface
      *
      * @return $this
      */
-    public function setAuthentication($username, $password)
+    public function setAuthentication(string $username, string $password): Client
     {
         $this->username = $username;
         $this->password = $password;
@@ -101,24 +101,26 @@ class Client implements ClientInterface
     }
 
     /**
-     * @param string $authType
+     * @param string $auth_type
      *
      * @return $this
      */
-    public function setAuthType($authType)
+    public function setAuthType(string $auth_type): Client
     {
-        $this->authType = $authType;
+        $this->auth_type = $auth_type;
 
         return $this;
     }
 
     /**
      * (@inheritdoc}
+     *
+     * @throws CupsException
      */
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
         if ($this->username || $this->password) {
-            switch ($this->authType) {
+            switch ($this->auth_type) {
                 case self::AUTHTYPE_BASIC:
                     $pass = base64_encode($this->username.':'.$this->password);
                     $authentication = 'Basic '.$pass;
@@ -134,6 +136,6 @@ class Client implements ClientInterface
             $request = $request->withHeader('Authorization', $authentication);
         }
 
-        return $this->httpClient->sendRequest($request);
+        return $this->http_client->sendRequest($request);
     }
 }

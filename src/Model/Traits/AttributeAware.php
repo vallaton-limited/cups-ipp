@@ -2,6 +2,9 @@
 
 namespace Smalot\Cups\Model\Traits;
 
+use Smalot\Cups\Model\JobInterface;
+use Smalot\Cups\Model\PrinterInterface;
+
 /**
  * Trait AttributeAware
  *
@@ -18,26 +21,16 @@ trait AttributeAware
     /**
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         return $this->attributes;
     }
 
     /**
-     * @param array $attributes
-     */
-    public function setAttributes($attributes)
-    {
-        foreach ($attributes as $name => $values) {
-            $this->setAttribute($name, $values);
-        }
-    }
-
-    /**
      * @param string $name
-     * @param mixed $values
+     * @param mixed  $values
      */
-    public function setAttribute($name, $values)
+    public function setAttribute(string $name, $values)
     {
         if (!is_array($values)) {
             $values = [$values];
@@ -47,10 +40,24 @@ trait AttributeAware
     }
 
     /**
-     * @param string $name
-     * @param mixed $value
+     * @param array $attributes
+     *
+     * @return JobInterface|PrinterInterface
      */
-    public function addAttribute($name, $value)
+    public function setAttributes(array $attributes): self
+    {
+        foreach ($attributes as $name => $values) {
+            $this->setAttribute($name, $values);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @param mixed  $value
+     */
+    public function addAttribute(string $name, $value)
     {
         $this->attributes[$name][] = $value;
     }
@@ -58,7 +65,7 @@ trait AttributeAware
     /**
      * @param string $name
      */
-    public function removeAttribute($name)
+    public function removeAttribute(string $name)
     {
         unset($this->attributes[$name]);
     }
@@ -68,7 +75,7 @@ trait AttributeAware
      *
      * @return bool
      */
-    public function hasAttribute($name)
+    public function hasAttribute(string $name): bool
     {
         return isset($this->attributes[$name]);
     }

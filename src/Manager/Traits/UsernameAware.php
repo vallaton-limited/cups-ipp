@@ -2,6 +2,8 @@
 
 namespace Smalot\Cups\Manager\Traits;
 
+use Smalot\Cups\CupsException;
+
 /**
  * Trait UsernameAware
  *
@@ -18,7 +20,7 @@ trait UsernameAware
     /**
      * @return string
      */
-    public function getUsername()
+    public function getUsername(): string
     {
         return $this->username;
     }
@@ -28,7 +30,7 @@ trait UsernameAware
      *
      * @return UsernameAware
      */
-    public function setUsername($username)
+    public function setUsername(string $username)
     {
         $this->username = $username;
 
@@ -37,19 +39,20 @@ trait UsernameAware
 
     /**
      * @return string
+     * @throws CupsException
      */
-    protected function buildUsername()
+    protected function buildUsername(): string
     {
-        $metaUsername = '';
+        $meta_username = '';
 
         if ($this->username) {
-            $metaUsername = chr(0x42) // keyword type || value-tag
+            $meta_username = chr(0x42) // keyword type || value-tag
               .chr(0x00).chr(0x14) // name-length
               .'requesting-user-name'
               .$this->builder->formatStringLength($this->username) // value-length
               .$this->username;
         }
 
-        return $metaUsername;
+        return $meta_username;
     }
 }

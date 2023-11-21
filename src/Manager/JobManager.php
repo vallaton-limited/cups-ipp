@@ -2,13 +2,11 @@
 
 namespace Smalot\Cups\Manager;
 
-use Http\Client\HttpClient;
-use Smalot\Cups\Builder\Builder;
+use Psr\Http\Client\ClientExceptionInterface;
 use Smalot\Cups\CupsException;
 use Smalot\Cups\Model\Job;
 use Smalot\Cups\Model\JobInterface;
 use Smalot\Cups\Model\PrinterInterface;
-use Smalot\Cups\Transport\Response as CupsResponse;
 use GuzzleHttp\Psr7\Request;
 
 /**
@@ -20,22 +18,19 @@ class JobManager extends ManagerAbstract
 {
 
     /**
-     * @param \Smalot\Cups\Model\PrinterInterface $printer
-     * @param bool $myJobs
-     * @param int $limit
-     * @param string $whichJobs
-     * @param bool $subset
+     * @param PrinterInterface $printer
+     * @param bool             $my_jobs
+     * @param int              $limit
+     * @param string           $which_jobs
+     * @param bool             $subset
      *
-     * @return \Smalot\Cups\Model\JobInterface[]
+     * @return JobInterface[]
+     * @throws ClientExceptionInterface
+     * @throws CupsException
      */
-    public function getList(
-      PrinterInterface $printer,
-      $myJobs = true,
-      $limit = 0,
-      $whichJobs = 'not-completed',
-      $subset = false
-    ) {
-        $request = $this->prepareGetListRequest($printer, $myJobs, $limit, $whichJobs, $subset);
+    public function getList(PrinterInterface $printer, bool $my_jobs = true, int $limit = 0, string $which_jobs = 'not-completed', bool $subset = false): array
+    {
+        $request = $this->prepareGetListRequest($printer, $my_jobs, $limit, $which_jobs, $subset);
         $response = $this->client->sendRequest($request);
         $result = $this->parseResponse($response);
         $values = $result->getValues();
@@ -55,16 +50,18 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
-     * @param bool $subset
-     * @param string $attributesGroup
+     * @param JobInterface $job
+     * @param bool         $subset
+     * @param string       $attributes_group
      *
-     * @return \Smalot\Cups\Model\JobInterface
+     * @return JobInterface
+     * @throws ClientExceptionInterface
+     * @throws CupsException
      */
-    public function reloadAttributes(JobInterface $job, $subset = false, $attributesGroup = 'all')
+    public function reloadAttributes(JobInterface $job, bool $subset = false, string $attributes_group = 'all'): JobInterface
     {
         if ($job->getUri()) {
-            $request = $this->prepareReloadAttributesRequest($job, $subset, $attributesGroup);
+            $request = $this->prepareReloadAttributesRequest($job, $subset, $attributes_group);
             $response = $this->client->sendRequest($request);
             $result = $this->parseResponse($response);
             $values = $result->getValues();
@@ -78,13 +75,15 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\PrinterInterface $printer
-     * @param JobInterface $job
-     * @param int $timeout
+     * @param PrinterInterface $printer
+     * @param JobInterface     $job
+     * @param int              $timeout
      *
      * @return bool
+     * @throws ClientExceptionInterface
+     * @throws CupsException
      */
-    public function send(PrinterInterface $printer, JobInterface $job, $timeout = 60)
+    public function send(PrinterInterface $printer, JobInterface $job, int $timeout = 60): bool
     {
         // Create job.
         $request = $this->prepareSendRequest($printer, $job, $timeout);
@@ -120,13 +119,15 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
-     * @param array $update
-     * @param array $delete
+     * @param JobInterface $job
+     * @param array        $update
+     * @param array        $delete
      *
      * @return bool
+     * @throws ClientExceptionInterface
+     * @throws CupsException
      */
-    public function update(JobInterface $job, $update = [], $delete = [])
+    public function update(JobInterface $job, array $update = [], array $delete = []): bool
     {
         $request = $this->prepareUpdateRequest($job, $update, $delete);
         $response = $this->client->sendRequest($request);
@@ -135,15 +136,17 @@ class JobManager extends ManagerAbstract
         // Refresh attributes.
         $this->reloadAttributes($job);
 
-        return ($result->getStatusCode() == 'successfull-ok');
+        return $result->getStatusCode() == 'successfull-ok';
     }
 
     /**
      * @param JobInterface $job
      *
      * @return bool
+     * @throws ClientExceptionInterface
+     * @throws CupsException
      */
-    public function cancel(JobInterface $job)
+    public function cancel(JobInterface $job): bool
     {
         $request = $this->prepareCancelRequest($job);
         $response = $this->client->sendRequest($request);
@@ -152,15 +155,17 @@ class JobManager extends ManagerAbstract
         // Refresh attributes.
         $this->reloadAttributes($job);
 
-        return ($result->getStatusCode() == 'successfull-ok');
+        return $result->getStatusCode() == 'successfull-ok';
     }
 
     /**
      * @param JobInterface $job
      *
      * @return bool
+     * @throws ClientExceptionInterface
+     * @throws CupsException
      */
-    public function release(JobInterface $job)
+    public function release(JobInterface $job): bool
     {
         $request = $this->prepareReleaseRequest($job);
         $response = $this->client->sendRequest($request);
@@ -169,12 +174,12 @@ class JobManager extends ManagerAbstract
         // Refresh attributes.
         $this->reloadAttributes($job);
 
-        return ($result->getStatusCode() == 'successfull-ok');
+        return $result->getStatusCode() == 'successfull-ok';
     }
 
     /**
      * @param JobInterface $job
-     * @param string $until
+     * @param string       $until
      * Can be:
      * - no-hold
      * - day-time
@@ -185,8 +190,10 @@ class JobManager extends ManagerAbstract
      * - third-shift
      *
      * @return bool
+     * @throws ClientExceptionInterface
+     * @throws CupsException
      */
-    public function hold(JobInterface $job, $until = 'indefinite')
+    public function hold(JobInterface $job, string $until = 'indefinite'): bool
     {
         $request = $this->prepareHoldRequest($job, $until);
         $response = $this->client->sendRequest($request);
@@ -195,15 +202,17 @@ class JobManager extends ManagerAbstract
         // Refresh attributes.
         $this->reloadAttributes($job);
 
-        return ($result->getStatusCode() == 'successfull-ok');
+        return $result->getStatusCode() == 'successfull-ok';
     }
 
     /**
      * @param JobInterface $job
      *
      * @return bool
+     * @throws ClientExceptionInterface
+     * @throws CupsException
      */
-    public function restart(JobInterface $job)
+    public function restart(JobInterface $job): bool
     {
         $request = $this->prepareRestartRequest($job);
         $response = $this->client->sendRequest($request);
@@ -212,61 +221,53 @@ class JobManager extends ManagerAbstract
         // Refresh attributes.
         $this->reloadAttributes($job);
 
-        return ($result->getStatusCode() == 'successfull-ok');
+        return $result->getStatusCode() == 'successfull-ok';
     }
 
     /**
-     * @param \Smalot\Cups\Model\PrinterInterface $printer
-     * @param bool $myJobs
-     * @param int $limit
-     * @param string $whichJobs
-     * @param bool $subset
+     * @param PrinterInterface $printer
+     * @param bool             $my_jobs
+     * @param int              $limit
+     * @param string           $which_jobs
+     * @param bool             $subset
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareGetListRequest(
-      PrinterInterface $printer,
-      $myJobs = true,
-      $limit = 0,
-      $whichJobs = 'not-completed',
-      $subset = false
-    ) {
-        $operationId = $this->buildOperationId();
+    protected function prepareGetListRequest(PrinterInterface $printer, bool $my_jobs = true, int $limit = 0, string $which_jobs = 'not-completed', bool $subset = false): Request
+    {
+        $operation_id = $this->buildOperationId();
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
         $username = $this->buildUsername();
 
-        $printerUri = $this->buildProperty('printer-uri', $printer->getUri());
-        $metaLimit = $this->buildProperty('limit', $limit, true);
-        $metaMyJobs = $this->buildProperty('my-jobs', $myJobs, true);
+        $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
+        $meta_limit = $this->buildProperty('limit', $limit, true);
+        $meta_my_jobs = $this->buildProperty('my-jobs', $my_jobs, true);
 
-        if ($whichJobs == 'completed') {
-            $metaWhichJobs = $this->buildProperty('which-jobs', $whichJobs, true);
-        } else {
-            $metaWhichJobs = '';
-        }
+        $meta_which_jobs = $which_jobs == 'completed' ? $this->buildProperty('which-jobs', $which_jobs, true) : '';
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x0A) // Get-Jobs | operation-id
-          .$operationId //           request-id
+          .$operation_id //           request-id
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
           .$username
-          .$printerUri
-          .$metaLimit
-          .$metaWhichJobs
-          .$metaMyJobs;
+          .$printer_uri
+          .$meta_limit
+          .$meta_which_jobs
+          .$meta_my_jobs;
 
         if ($subset) {
-            $attributesGroup = [
+            $attributes_group = [
               'job-uri',
               'job-name',
               'job-state',
               'job-state-reason',
             ];
 
-            $content .= $this->buildProperty('requested-attributes', $attributesGroup);
+            $content .= $this->buildProperty('requested-attributes', $attributes_group);
         } else {
             // Cups 1.4.4 doesn't return much of anything without this.
             $content .= $this->buildProperty('requested-attributes', 'all');
@@ -280,53 +281,52 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
-     * @param bool $subset
-     * @param string $attributesGroup
+     * @param JobInterface $job
+     * @param bool         $subset
+     * @param string       $attributes_group
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareReloadAttributesRequest(JobInterface $job, $subset = false, $attributesGroup = 'all')
+    protected function prepareReloadAttributesRequest(JobInterface $job, bool $subset = false, string $attributes_group = 'all'): Request
     {
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
-        $operationId = $this->buildOperationId();
+        $operation_id = $this->buildOperationId();
         $username = $this->buildUsername();
-        $jobUri = $this->buildProperty('job-uri', $job->getUri());
+        $job_uri = $this->buildProperty('job-uri', $job->getUri());
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x09) // Get-Job-Attributes | operation-id
-          .$operationId //           request-id
+          .$operation_id //           request-id
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
-          .$jobUri
+          .$job_uri
           .$username;
 
         if ($subset) {
-            $attributesGroup = [
+            $attributes_group = [
               'job-uri',
               'job-name',
               'job-state',
               'job-state-reason',
             ];
 
-            $content .= $this->buildProperty('requested-attributes', $attributesGroup);
-        } elseif ($attributesGroup) {
-            switch ($attributesGroup) {
+            $content .= $this->buildProperty('requested-attributes', $attributes_group);
+        } elseif ($attributes_group) {
+            switch ($attributes_group) {
                 case 'job-template':
-                    break;
                 case 'job-description':
-                    break;
                 case 'all':
                     break;
                 default:
-                    trigger_error('Invalid attribute group: "'.$attributesGroup.'"', E_USER_NOTICE);
-                    $attributesGroup = '';
+                    trigger_error('Invalid attribute group: "'.$attributes_group.'"', E_USER_NOTICE);
+                    $attributes_group = '';
                     break;
             }
 
-            $content .= $this->buildProperty('requested-attributes', $attributesGroup);
+            $content .= $this->buildProperty('requested-attributes', $attributes_group);
         }
         $content .= chr(0x03); // end-of-attributes | end-of-attributes-tag
 
@@ -336,41 +336,42 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
-     * @param array $update
-     * @param array $delete
+     * @param JobInterface $job
+     * @param array        $update
+     * @param array        $delete
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareUpdateRequest(JobInterface $job, $update = [], $delete = [])
+    protected function prepareUpdateRequest(JobInterface $job, array $update = [], array $delete = []): Request
     {
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
-        $operationId = $this->buildOperationId();
+        $operation_id = $this->buildOperationId();
         $username = $this->buildUsername();
-        $jobUri = $this->buildProperty('job-uri', $job->getUri());
+        $job_uri = $this->buildProperty('job-uri', $job->getUri());
         $copies = $this->buildProperty('copies', $job->getCopies());
         $sides = $this->buildProperty('sides', $job->getSides());
-        $pageRanges = $this->buildPageRanges($job->getPageRanges());
+        $page_ranges = $this->buildPageRanges($job->getPageRanges());
 
-        $jobAttributes = $this->buildProperties($update);
+        $job_attributes = $this->buildProperties($update);
 
-        $deletedAttributes = '';
+        $deleted_attributes = '';
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x14) // Set-Job-Attributes | operation-id
-          .$operationId //           request-id
+          .$operation_id //           request-id
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
-          .$jobUri
+          .$job_uri
           .$username
           .chr(0x02) // start job-attributes
-          .$jobAttributes // setteds by setAttribute($attribute,$value)
+          .$job_attributes // set by setAttribute($attribute,$value)
           .$copies
           .$sides
-          .$pageRanges
-          .$deletedAttributes
+          .$page_ranges
+          .$deleted_attributes
           .chr(0x03); // end-of-attributes | end-of-attributes-tag
 
         $headers = ['Content-Type' => 'application/ipp'];
@@ -379,47 +380,48 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\PrinterInterface $printer
-     * @param JobInterface $job
-     * @param int $timeout
+     * @param PrinterInterface $printer
+     * @param JobInterface     $job
+     * @param int              $timeout
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareSendRequest(PrinterInterface $printer, JobInterface $job, $timeout = 60)
+    protected function prepareSendRequest(PrinterInterface $printer, JobInterface $job, int $timeout = 60): Request
     {
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
-        $operationId = $this->buildOperationId();
+        $operation_id = $this->buildOperationId();
         $username = $this->buildUsername();
-        $printerUri = $this->buildProperty('printer-uri', $printer->getUri());
-        $jobName = $this->buildProperty('job-name', $job->getName());
+        $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
+        $job_name = $this->buildProperty('job-name', $job->getName());
         $fidelity = $this->buildProperty('ipp-attribute-fidelity', $job->getFidelity());
-        $timeoutAttribute = $this->buildProperty('multiple-operation-time-out', $timeout);
+        $timeout_attribute = $this->buildProperty('multiple-operation-time-out', $timeout);
         $copies = $this->buildProperty('copies', $job->getCopies());
         $sides = $this->buildProperty('sides', $job->getSides());
-        $pageRanges = $this->buildPageRanges($job->getPageRanges());
+        $page_ranges = $this->buildPageRanges($job->getPageRanges());
 
         // todo
-        $operationAttributes = '';//$this->buildOperationAttributes();
-        $jobAttributes = $this->buildProperties($job->getAttributes());
+        $operation_attributes = '';//$this->buildOperationAttributes();
+        $job_attributes = $this->buildProperties($job->getAttributes());
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x05) // Create-Job | operation-id
-          .$operationId //           request-id
+          .$operation_id //           request-id
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
-          .$printerUri
+          .$printer_uri
           .$username
-          .$jobName
+          .$job_name
           .$fidelity
-          .$timeoutAttribute
-          .$operationAttributes
+          .$timeout_attribute
+          .$operation_attributes
           .chr(0x02) // start job-attributes | job-attributes-tag
           .$copies
           .$sides
-          .$pageRanges
-          .$jobAttributes
+          .$page_ranges
+          .$job_attributes
           .chr(0x03); // end-of-attributes | end-of-attributes-tag
 
         $headers = ['Content-Type' => 'application/ipp'];
@@ -428,30 +430,31 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
+     * @param JobInterface $job
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareCancelRequest(JobInterface $job)
+    protected function prepareCancelRequest(JobInterface $job): Request
     {
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
-        $operationId = $this->buildOperationId();
+        $operation_id = $this->buildOperationId();
         $username = $this->buildUsername();
-        $jobUri = $this->buildProperty('job-uri', $job->getUri());
+        $job_uri = $this->buildProperty('job-uri', $job->getUri());
 
         // Needs a build function call.
-        $requestBodyMalformed = '';
+        $request_body_malformed = '';
         $message = '';
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x08) // cancel-Job | operation-id
-          .$operationId //           request-id
-          .$requestBodyMalformed
+          .$operation_id //           request-id
+          .$request_body_malformed
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
-          .$jobUri
+          .$job_uri
           .$username
           .$message
           .chr(0x03); // end-of-attributes | end-of-attributes-tag
@@ -462,28 +465,29 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
+     * @param JobInterface $job
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareReleaseRequest(JobInterface $job)
+    protected function prepareReleaseRequest(JobInterface $job): Request
     {
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
-        $operationId = $this->buildOperationId();
+        $operation_id = $this->buildOperationId();
         $username = $this->buildUsername();
-        $jobUri = $this->buildProperty('job-uri', $job->getUri());
+        $job_uri = $this->buildProperty('job-uri', $job->getUri());
 
         // Needs a build function call.
         $message = '';
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x0d) // release-Job | operation-id
-          .$operationId //           request-id
+          .$operation_id //           request-id
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
-          .$jobUri
+          .$job_uri
           .$username
           .$message
           .chr(0x03); // end-of-attributes | end-of-attributes-tag
@@ -494,23 +498,24 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
-     * @param string $until
+     * @param JobInterface $job
+     * @param string       $until
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareHoldRequest(JobInterface $job, $until = 'indefinite')
+    protected function prepareHoldRequest(JobInterface $job, string $until = 'indefinite'): Request
     {
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
-        $operationId = $this->buildOperationId();
+        $operation_id = $this->buildOperationId();
         $username = $this->buildUsername();
-        $jobUri = $this->buildProperty('job-uri', $job->getUri());
+        $job_uri = $this->buildProperty('job-uri', $job->getUri());
 
         // Needs a build function call.
         $message = '';
 
-        $untilStrings = [
+        $until_strings = [
           'no-hold',
           'day-time',
           'evening',
@@ -520,11 +525,11 @@ class JobManager extends ManagerAbstract
           'third-shift',
         ];
 
-        if (!in_array($until, $untilStrings)) {
+        if (!in_array($until, $until_strings)) {
             $until = 'indefinite';
         }
 
-        $holdUntil = chr(0x42) // keyword
+        $hold_until = chr(0x42) // keyword
           .$this->builder->formatStringLength('job-hold-until')
           .'job-hold-until'
           .$this->builder->formatStringLength($until)
@@ -532,14 +537,14 @@ class JobManager extends ManagerAbstract
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x0C) // hold-Job | operation-id
-          .$operationId //           request-id
+          .$operation_id //           request-id
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
           .$username
-          .$jobUri
+          .$job_uri
           .$message
-          .$holdUntil
+          .$hold_until
           .chr(0x03); // end-of-attributes | end-of-attributes-tag
 
         $headers = ['Content-Type' => 'application/ipp'];
@@ -548,28 +553,29 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
+     * @param JobInterface $job
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareRestartRequest(JobInterface $job)
+    protected function prepareRestartRequest(JobInterface $job): Request
     {
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
-        $operationId = $this->buildOperationId();
+        $operation_id = $this->buildOperationId();
         $username = $this->buildUsername();
-        $jobUri = $this->buildProperty('job-uri', $job->getUri());
+        $job_uri = $this->buildProperty('job-uri', $job->getUri());
 
         // Needs a build function call.
         $message = '';
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x0E) // release-Job | operation-id
-          .$operationId //           request-id
+          .$operation_id //           request-id
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
-          .$jobUri
+          .$job_uri
           .$username
           .$message
           .chr(0x03); // end-of-attributes | end-of-attributes-tag
@@ -580,41 +586,42 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
-     * @param array $part
-     * @param bool $isLast
+     * @param JobInterface $job
+     * @param array        $part
+     * @param bool         $is_last
      *
-     * @return \GuzzleHttp\Psr7\Request
+     * @return Request
+     * @throws CupsException
      */
-    protected function prepareSendPartRequest(JobInterface $job, $part, $isLast = false)
+    protected function prepareSendPartRequest(JobInterface $job, $part, $is_last = false): Request
     {
-        $operationId = $this->buildOperationId();
+        $operation_id = $this->buildOperationId();
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
         $username = $this->buildUsername();
 
-        $jobUri = $this->buildProperty('job-uri', $job->getUri());
-        $documentName = $this->buildProperty('document-name', $part['name']);
+        $job_uri = $this->buildProperty('job-uri', $job->getUri());
+        $document_name = $this->buildProperty('document-name', $part['name']);
         $fidelity = $this->buildProperty('ipp-attribute-fidelity', $job->getFidelity(), true);
-        $mimeMediaType = $this->buildProperty('document-format', $part['mimeType'], true);
+        $mime_media_type = $this->buildProperty('document-format', $part['mimeType'], true);
 
         // @todo
-        $operationAttributes = '';//$this->buildOperationAttributes();
-        $lastDocument = $this->buildProperty('last-document', $isLast);
+        $operation_attributes = '';//$this->buildOperationAttributes();
+        $last_document = $this->buildProperty('last-document', $is_last);
 
         $content = $this->getVersion() // 1.1  | version-number
           .chr(0x00).chr(0x06) // Send-Document | operation-id
-          .$operationId //           request-id
+          .$operation_id //           request-id
           .chr(0x01) // start operation-attributes | operation-attributes-tag
           .$charset
           .$language
-          .$jobUri
+          .$job_uri
           .$username
-          .$documentName
+          .$document_name
           .$fidelity
-          .$mimeMediaType
-          .$operationAttributes
-          .$lastDocument
+          .$mime_media_type
+          .$operation_attributes
+          .$last_document
           .chr(0x03); // end-of-attributes | end-of-attributes-tag
 
         if ($part['type'] == Job::CONTENT_FILE) {
@@ -633,12 +640,12 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param \Smalot\Cups\Model\JobInterface $job
+     * @param JobInterface $job
      * @param $item
      *
-     * @return \Smalot\Cups\Model\JobInterface
+     * @return JobInterface
      */
-    protected function fillAttributes(JobInterface $job, $item)
+    protected function fillAttributes(JobInterface $job, $item): JobInterface
     {
         $name = empty($item['job-name'][0]) ? 'Job #'.$job->getId() : $item['job-name'][0];
         $copies = empty($item['number-up'][0]) ? 1 : $item['number-up'][0];
@@ -681,15 +688,19 @@ class JobManager extends ManagerAbstract
     }
 
     /**
-     * @param string $pageRanges
+     * @param string $page_ranges
      *
      * @return string
+     * @throws CupsException
      */
-    protected function buildPageRanges($pageRanges)
+    protected function buildPageRanges(string $page_ranges = 'all'): string
     {
-        $pageRanges = trim(str_replace('-', ':', $pageRanges));
-        $pageRanges = explode(',', $pageRanges);
+        if ($page_ranges === 'all' || empty($page_ranges)) {
+            return '';
+        }
+        $page_ranges = trim(str_replace('-', ':', $page_ranges));
+        $page_ranges = explode(',', $page_ranges);
 
-        return $this->buildProperty('page-ranges', $pageRanges);
+        return $this->buildProperty('page-ranges', $page_ranges);
     }
 }

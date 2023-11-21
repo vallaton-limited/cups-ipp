@@ -2,6 +2,8 @@
 
 namespace Smalot\Cups\Manager\Traits;
 
+use Smalot\Cups\CupsException;
+
 /**
  * Trait OperationIdAware
  *
@@ -13,30 +15,30 @@ trait OperationIdAware
     /**
      * @var int
      */
-    protected $operationId;
+    protected $operation_id;
 
     /**
      * @param string $type
      *
      * @return int
      */
-    public function getOperationId($type = 'current')
+    public function getOperationId(string $type = 'current'): int
     {
         if ($type === 'new') {
-            $this->operationId++;
+            $this->operation_id++;
         }
 
-        return $this->operationId;
+        return $this->operation_id;
     }
 
     /**
-     * @param int $operationId
+     * @param int $operation_id
      *
      * @return OperationIdAware
      */
-    public function setOperationId($operationId)
+    public function setOperationId(int $operation_id)
     {
-        $this->operationId = $operationId;
+        $this->operation_id = $operation_id;
 
         return $this;
     }
@@ -44,13 +46,12 @@ trait OperationIdAware
     /**
      * @param string $type
      *
-     * @return mixed
+     * @return string
+     * @throws CupsException
      */
-    protected function buildOperationId($type = 'new')
+    protected function buildOperationId(string $type = 'new'): string
     {
-        $operationId = $this->getOperationId($type);
-        $metaOperationId = $this->builder->formatInteger($operationId);
-
-        return $metaOperationId;
+        $operation_id = $this->getOperationId($type);
+        return $this->builder->formatInteger($operation_id);
     }
 }

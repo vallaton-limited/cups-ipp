@@ -5,6 +5,8 @@ namespace Smalot\Cups\Manager;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Smalot\Cups\Builder\Builder;
+use Smalot\Cups\CupsException;
+use Smalot\Cups\Transport\Response;
 use Smalot\Cups\Transport\ResponseParser;
 
 /**
@@ -21,19 +23,19 @@ class ManagerAbstract
     use Traits\UsernameAware;
 
     /**
-     * @var \Psr\Http\Client\ClientInterface;
+     * @var ClientInterface;
      */
     protected $client;
 
     /**
-     * @var \Smalot\Cups\Builder\Builder
+     * @var Builder
      */
     protected $builder;
 
     /**
-     * @var \Smalot\Cups\Transport\ResponseParser
+     * @var ResponseParser
      */
-    protected $responseParser;
+    protected $response_parser;
 
     /**
      * @var string
@@ -43,15 +45,15 @@ class ManagerAbstract
     /**
      * ManagerAbstract constructor.
      *
-     * @param \Smalot\Cups\Builder\Builder $builder
-     * @param \Psr\Http\Client\ClientInterface $client
-     * @param \Smalot\Cups\Transport\ResponseParser $responseParser
+     * @param Builder         $builder
+     * @param ClientInterface $client
+     * @param ResponseParser  $response_parser
      */
-    public function __construct(Builder $builder, ClientInterface $client, ResponseParser $responseParser)
+    public function __construct(Builder $builder, ClientInterface $client, ResponseParser $response_parser)
     {
         $this->client = $client;
         $this->builder = $builder;
-        $this->responseParser = $responseParser;
+        $this->response_parser = $response_parser;
         $this->version = chr(0x01).chr(0x01);
 
         $this->setCharset('us-ascii');
@@ -62,40 +64,42 @@ class ManagerAbstract
 
     /**
      * @param string $name
-     * @param mixed $value
-     * @param bool $emptyIfMissing
+     * @param mixed  $value
+     * @param bool   $empty_if_missing
      *
      * @return string
+     * @throws CupsException
      */
-    public function buildProperty($name, $value, $emptyIfMissing = false)
+    public function buildProperty(string $name, $value, bool $empty_if_missing = false): string
     {
-        return $this->builder->buildProperty($name, $value, $emptyIfMissing);
+        return $this->builder->buildProperty($name, $value, $empty_if_missing);
     }
 
     /**
      * @param array $properties
      *
      * @return string
+     * @throws CupsException
      */
-    public function buildProperties($properties = [])
+    public function buildProperties(array $properties = []): string
     {
         return $this->builder->buildProperties($properties);
     }
 
     /**
-     * @param \Psr\Http\Message\ResponseInterface $response
+     * @param ResponseInterface $response
      *
-     * @return \Smalot\Cups\Transport\Response
+     * @return Response
      */
-    public function parseResponse(ResponseInterface $response)
+    public function parseResponse(ResponseInterface $response): Response
     {
-        return $this->responseParser->parse($response);
+        return $this->response_parser->parse($response);
     }
 
     /**
      * @return string
      */
-    public function getVersion()
+    public function getVersion(): string
     {
         return $this->version;
     }

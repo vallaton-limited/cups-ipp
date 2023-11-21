@@ -26,7 +26,7 @@ class Printer implements PrinterInterface
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -36,7 +36,7 @@ class Printer implements PrinterInterface
      *
      * @return Printer
      */
-    public function setName($name)
+    public function setName(string $name): Printer
     {
         $this->name = $name;
 
@@ -46,7 +46,7 @@ class Printer implements PrinterInterface
     /**
      * @return string
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -56,7 +56,7 @@ class Printer implements PrinterInterface
      *
      * @return Printer
      */
-    public function setStatus($status)
+    public function setStatus(string $status): Printer
     {
         $this->status = $status;
 
