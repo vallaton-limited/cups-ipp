@@ -110,18 +110,24 @@ $builder = new Builder();
 $responseParser = new ResponseParser();
 
 $printerManager = new PrinterManager($builder, $client, $responseParser);
-$printer = $printerManager->findByUri('ipp://localhost:631/printers/HP-Photosmart-C4380-series');
+// Find the printer by the Uri
+//$printer = $printerManager->findByUri('ipp://localhost:631/printers/HP-Photosmart-C4380-series');
 
-$jobManager = new JobManager($builder, $client, $responseParser);
-
-$job = new Job();
-$job->setName('job create file');
-$job->setUsername('demo');
-$job->setCopies(1);
-$job->setPageRanges('1');
-$job->addFile('./helloworld.pdf');
-$job->addAttribute('media', 'A4');
-$job->addAttribute('fit-to-page', true);
-$result = $jobManager->send($printer, $job);
+// or by the name
+$printers = $printerManager->findByName('HP-Photosmart-C4380-series');
+if (!empty($printers)) {
+    $printer = $printers[0];
+    $jobManager = new JobManager($builder, $client, $responseParser);
+    
+    $job = new Job();
+    $job->setName('job create file');
+    $job->setUsername('demo');
+    $job->setCopies(1);
+    $job->setPageRanges('1'); // This can be left out, it will print all pages by default
+    $job->addFile('./helloworld.pdf');
+    $job->addAttribute('media', 'A4');
+    $job->addAttribute('fit-to-page', true);
+    $result = $jobManager->send($printer, $job);
+}
 
 ````
