@@ -2,7 +2,7 @@
 
 namespace Smalot\Cups\Manager;
 
-use Http\Client\HttpClient;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Smalot\Cups\Builder\Builder;
 use Smalot\Cups\Transport\ResponseParser;
@@ -21,7 +21,7 @@ class ManagerAbstract
     use Traits\UsernameAware;
 
     /**
-     * @var \Http\Client\HttpClient
+     * @var \Psr\Http\Client\ClientInterface;
      */
     protected $client;
 
@@ -44,10 +44,10 @@ class ManagerAbstract
      * ManagerAbstract constructor.
      *
      * @param \Smalot\Cups\Builder\Builder $builder
-     * @param \Http\Client\HttpClient $client
+     * @param \Psr\Http\Client\ClientInterface $client
      * @param \Smalot\Cups\Transport\ResponseParser $responseParser
      */
-    public function __construct(Builder $builder, HttpClient $client, ResponseParser $responseParser)
+    public function __construct(Builder $builder, ClientInterface $client, ResponseParser $responseParser)
     {
         $this->client = $client;
         $this->builder = $builder;
