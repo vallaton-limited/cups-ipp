@@ -2,15 +2,14 @@
 
 namespace Smalot\Cups\Transport;
 
+use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Uri;
 use Http\Client\Common\Plugin\AddHostPlugin;
 use Http\Client\Common\Plugin\ContentLengthPlugin;
 use Http\Client\Common\Plugin\DecoderPlugin;
 use Http\Client\Common\Plugin\ErrorPlugin;
 use Http\Client\Common\PluginClient;
-use Http\Client\HttpClient;
 use Http\Client\Socket\Client as SocketHttpClient;
-use Http\Message\MessageFactory\GuzzleMessageFactory;
 use Psr\Http\Message\RequestInterface;
 use Smalot\Cups\CupsException;
 use Psr\Http\Client\ClientInterface;
@@ -31,7 +30,7 @@ class Client implements ClientInterface
     const AUTHTYPE_DIGEST = 'digest';
 
     /**
-     * @var HttpClient
+     * @var PluginClient
      */
     protected $http_client;
 
@@ -71,7 +70,7 @@ class Client implements ClientInterface
             $socket_client_options['remote_socket'] = self::SOCKET_URL;
         }
 
-        $message_factory = new GuzzleMessageFactory();
+        $message_factory = new HttpFactory();
         $socket_client = new SocketHttpClient($message_factory, $socket_client_options);
         $host = preg_match('/unix:\/\//', $socket_client_options['remote_socket']) ? 'http://localhost' : $socket_client_options['remote_socket'];
         $this->http_client = new PluginClient(

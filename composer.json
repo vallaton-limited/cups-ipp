@@ -8,13 +8,13 @@
         "php-http/socket-client": "^2",
         "php-http/client-common": "^2",
         "php-http/message": "^1",
+        "php-http/message-factory": "^1",
         "guzzlehttp/psr7": "^2",
         "symfony/yaml": "^6",
         "ext-gettext": "*"
     },
     "require-dev": {
-        "symfony/debug": "^v4",
-        "atoum/atoum": "^4"
+      "phpunit/phpunit": "^9"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -28,7 +28,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Smalot\\Cups\\Tests\\Units\\": "tests/"
+            "tests\\": "tests/"
         }
     }
 }

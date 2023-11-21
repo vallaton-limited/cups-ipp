@@ -1,8 +1,9 @@
 <?php
 
-namespace Smalot\Cups\Tests\Units\Builder;
+namespace tests;
 
-use mageekguy\atoum;
+
+use PHPUnit\Framework\TestCase;
 use Smalot\Cups\Model\Job;
 use Smalot\Cups\Model\Printer;
 use Smalot\Cups\Transport\Client;
@@ -12,79 +13,84 @@ use Smalot\Cups\Transport\Client;
  *
  * @package Smalot\Cups\Tests\Units\Builder
  */
-class Builder extends atoum\test
+class Builder extends TestCase
 {
 
     public function testFormatStringLength()
     {
         $builder = new \Smalot\Cups\Builder\Builder();
 
-        $length = $builder->formatStringLength('bonjour');
-        $this->string($length)->isEqualTo(chr(0).chr(7));
-        $length = $builder->formatStringLength(str_repeat('X', 512));
-        $this->string($length)->isEqualTo(chr(2).chr(0));
-        $length = $builder->formatStringLength(str_repeat('X', 513));
-        $this->string($length)->isEqualTo(chr(2).chr(1));
-        $length = $builder->formatStringLength(str_repeat('X', 65535));
-        $this->string($length)->isEqualTo(chr(255).chr(255));
+        $results = $builder->formatStringLength('bonjour');
+        $this->assertEquals(chr(0).chr(7), $results);
 
-        $this->exception(
-          function () use ($builder) {
-              $builder->formatStringLength(str_repeat('X', 65535 + 1));
-          }
-        )
-          ->isInstanceOf('\Smalot\Cups\CupsException')
-          ->hasMessage('Max string length for an ipp meta-information = 65535, while here 65536.')
-          ->hasCode(0);
+        $results = $builder->formatStringLength(str_repeat('X', 512));
+        $this->assertEquals(chr(2).chr(0), $results);
+
+        $results = $builder->formatStringLength(str_repeat('X', 513));
+        $this->assertEquals(chr(2).chr(1), $results);
+
+        $results = $builder->formatStringLength(str_repeat('X', 65535));
+        $this->assertEquals(chr(255).chr(255), $results);
+
+        $this->expectException(\Smalot\Cups\CupsException::class);
+        $this->expectExceptionMessage('Max string length for an ipp meta-information = 65535, while here 65536.');
+        $builder->formatStringLength(str_repeat('X', 65535 + 1));
     }
 
     public function testFormatInteger()
     {
         $builder = new \Smalot\Cups\Builder\Builder();
 
-        $length = $builder->formatInteger(0);
-        $this->string($length)->isEqualTo(chr(0).chr(0).chr(0).chr(0));
-        $length = $builder->formatInteger(5);
-        $this->string($length)->isEqualTo(chr(0).chr(0).chr(0).chr(5));
-        $length = $builder->formatInteger(-5);
-        $this->string($length)->isEqualTo(chr(255).chr(255).chr(255).chr(251));
-        $length = $builder->formatInteger(1024);
-        $this->string($length)->isEqualTo(chr(0).chr(0).chr(4).chr(0));
-        $length = $builder->formatInteger(65535);
-        $this->string($length)->isEqualTo(chr(0).chr(0).chr(255).chr(255));
-        $length = $builder->formatInteger(2147483646);
-        $this->string($length)->isEqualTo(chr(127).chr(255).chr(255).chr(254));
-        $length = $builder->formatInteger(-2147483648);
-        $this->string($length)->isEqualTo(chr(128).chr(0).chr(0).chr(0));
+        $results = $builder->formatInteger(0);
+        $this->assertEquals(chr(0).chr(0).chr(0).chr(0), $results);
 
-        $this->exception(
-          function () use ($builder) {
-              $builder->formatInteger(2147483647);
-          }
-        )
-          ->isInstanceOf('\Smalot\Cups\CupsException')
-          ->hasMessage('Values must be between -2147483648 and 2147483647.')
-          ->hasCode(0);
-        $this->exception(
-          function () use ($builder) {
-              $builder->formatInteger(-2147483649);
-          }
-        )
-          ->isInstanceOf('\Smalot\Cups\CupsException')
-          ->hasMessage('Values must be between -2147483648 and 2147483647.')
-          ->hasCode(0);
+        $results = $builder->formatInteger(5);
+        $this->assertEquals(chr(0).chr(0).chr(0).chr(5), $results);
+
+        $results = $builder->formatInteger(-5);
+        $this->assertEquals(chr(255).chr(255).chr(255).chr(251), $results);
+
+        $results = $builder->formatInteger(1024);
+        $this->assertEquals(chr(0).chr(0).chr(4).chr(0), $results);
+
+        $results = $builder->formatInteger(65535);
+        $this->assertEquals(chr(0).chr(0).chr(255).chr(255), $results);
+
+        $results = $builder->formatInteger(2147483646);
+        $this->assertEquals(chr(127).chr(255).chr(255).chr(254), $results);
+
+        $results = $builder->formatInteger(-2147483648);
+        $this->assertEquals(chr(128).chr(0).chr(0).chr(0), $results);
     }
 
-    public function testFormatRangeOfInteger()
+    public function testFormatIntegerToLarge()
+    {
+        $builder = new \Smalot\Cups\Builder\Builder();
+        $this->expectException(\Smalot\Cups\CupsException::class);
+        $this->expectExceptionMessage('Values must be between -2147483648 and 2147483647.');
+        $builder->formatInteger(2147483647);
+    }
+
+    public function testFormatIntegerToSmall()
+    {
+        $builder = new \Smalot\Cups\Builder\Builder();
+        $this->expectException(\Smalot\Cups\CupsException::class);
+        $this->expectExceptionMessage('Values must be between -2147483648 and 2147483647.');
+        $builder->formatInteger(-2147483649);
+    }
+
+        public function testFormatRangeOfInteger()
     {
         $builder = new \Smalot\Cups\Builder\Builder();
 
-        $length = $builder->formatRangeOfInteger('1:5');
-        $this->string($length)->isEqualTo(chr(0).chr(0).chr(0).chr(1).chr(0).chr(0).chr(0).chr(5));
-        $length = $builder->formatRangeOfInteger('1-5');
-        $this->string($length)->isEqualTo(chr(0).chr(0).chr(0).chr(1).chr(0).chr(0).chr(0).chr(5));
-        $length = $builder->formatRangeOfInteger('5');
-        $this->string($length)->isEqualTo(chr(0).chr(0).chr(0).chr(5).chr(0).chr(0).chr(0).chr(5));
+        $results = $builder->formatRangeOfInteger('1:5');
+        $this->assertEquals(chr(0).chr(0).chr(0).chr(1).chr(0).chr(0).chr(0).chr(5), $results);
+
+        $results = $builder->formatRangeOfInteger('1-5');
+        $this->assertEquals(chr(0).chr(0).chr(0).chr(1).chr(0).chr(0).chr(0).chr(5), $results);
+
+        $results = $builder->formatRangeOfInteger('5');
+        $this->assertEquals(chr(0).chr(0).chr(0).chr(5).chr(0).chr(0).chr(0).chr(5), $results);
     }
 
     public function testBuildProperties()
@@ -98,20 +104,21 @@ class Builder extends atoum\test
           ],
         ];
 
-        $type = $builder->buildProperties($properties);
-        $this->string($type)->isEqualTo(
-        // fit-to-page
-          chr(0x21).
-          chr(0).chr(0x0b).
-          'fit-to-page'.
-          chr(0).chr(0x4).
-          chr(0).chr(0).chr(0).chr(1).
-          // printer-resolution
-          chr(0x32).
-          chr(0).chr(0x12).
-          'printer-resolution'.
-          chr(0).chr(0x9).
-          chr(0).chr(0).chr(0x01).chr(0x2c).chr(0x0).chr(0x0).chr(0x01).chr(0x2c).chr(0x3)
+        $results = $builder->buildProperties($properties);
+        $this->assertEquals(
+            // fit-to-page
+            chr(0x21).
+            chr(0).chr(0x0b).
+            'fit-to-page'.
+            chr(0).chr(0x4).
+            chr(0).chr(0).chr(0).chr(1).
+            // printer-resolution
+            chr(0x32).
+            chr(0).chr(0x12).
+            'printer-resolution'.
+            chr(0).chr(0x9).
+            chr(0).chr(0).chr(0x01).chr(0x2c).chr(0x0).chr(0x0).chr(0x01).chr(0x2c).chr(0x3),
+            $results
         );
     }
 
@@ -119,84 +126,93 @@ class Builder extends atoum\test
     {
         $builder = new \Smalot\Cups\Builder\Builder();
 
-        $type = $builder->buildProperty('fit-to-page', 1);
-        $this->string($type)->isEqualTo(
-          chr(0x21).
-          chr(0).chr(0x0b).
-          'fit-to-page'.
-          chr(0).chr(0x4).
-          chr(0).chr(0).chr(0).chr(1)
+        $results = $builder->buildProperty('fit-to-page', 1);
+        $this->assertEquals(
+            chr(0x21).
+            chr(0).chr(0x0b).
+            'fit-to-page'.
+            chr(0).chr(0x4).
+            chr(0).chr(0).chr(0).chr(1),
+            $results
         );
-        $type = $builder->buildProperty('fit-to-page', 0);
-        $this->string($type)->isEqualTo(
-          chr(0x21).
-          chr(0).chr(0x0b).
-          'fit-to-page'.
-          chr(0).chr(0x4).
-          chr(0).chr(0).chr(0).chr(0)
-        );
-
-        $type = $builder->buildProperty('printer-resolution', '300dpi-300dpi');
-        $this->string($type)->isEqualTo(
-          chr(0x32).
-          chr(0).chr(0x12).
-          'printer-resolution'.
-          chr(0).chr(0x9).
-          chr(0).chr(0).chr(0x01).chr(0x2c).chr(0x0).chr(0x0).chr(0x01).chr(0x2c).chr(0x3)
+        $results = $builder->buildProperty('fit-to-page', 0);
+        $this->assertEquals(
+            chr(0x21).
+            chr(0).chr(0x0b).
+            'fit-to-page'.
+            chr(0).chr(0x4).
+            chr(0).chr(0).chr(0).chr(0),
+            $results
         );
 
-        $type = $builder->buildProperty('printer-resolution', '300dpc-300dpc');
-        $this->string($type)->isEqualTo(
-          chr(0x32).
-          chr(0).chr(0x12).
-          'printer-resolution'.
-          chr(0).chr(0x9).
-          chr(0).chr(0).chr(0x01).chr(0x2c).chr(0x0).chr(0x0).chr(0x01).chr(0x2c).chr(0x4)
+        $results = $builder->buildProperty('printer-resolution', '300dpi-300dpi');
+        $this->assertEquals(
+            chr(0x32).
+            chr(0).chr(0x12).
+            'printer-resolution'.
+            chr(0).chr(0x9).
+            chr(0).chr(0).chr(0x01).chr(0x2c).chr(0x0).chr(0x0).chr(0x01).chr(0x2c).chr(0x3),
+            $results
         );
 
-        $type = $builder->buildProperty('printer-resolution', '100x100');
-        $this->string($type)->isEqualTo(
-          chr(0x32).
-          chr(0).chr(0x12).
-          'printer-resolution'.
-          chr(0).chr(0x8).
-          chr(0).chr(0).chr(0x0).chr(0x64).chr(0x0).chr(0x0).chr(0x0).chr(0x64)
+        $results = $builder->buildProperty('printer-resolution', '300dpc-300dpc');
+        $this->assertEquals(
+            chr(0x32).
+            chr(0).chr(0x12).
+            'printer-resolution'.
+            chr(0).chr(0x9).
+            chr(0).chr(0).chr(0x01).chr(0x2c).chr(0x0).chr(0x0).chr(0x01).chr(0x2c).chr(0x4),
+            $results
         );
 
-        $type = $builder->buildProperty('orientation-requested', 'landscape');
-        $this->string($type)->isEqualTo(
-          chr(0x23).
-          chr(0).chr(21).
-          'orientation-requested'.
-          chr(0).chr(0x9).
-          'landscape'
+        $results = $builder->buildProperty('printer-resolution', '100x100');
+        $this->assertEquals(
+            chr(0x32).
+            chr(0).chr(0x12).
+            'printer-resolution'.
+            chr(0).chr(0x8).
+            chr(0).chr(0).chr(0x0).chr(0x64).chr(0x0).chr(0x0).chr(0x0).chr(0x64),
+            $results
         );
 
-        $jobUri = $builder->buildProperty('printer-uri', 'http://localhost/printer/pdf');
-        $this->string($jobUri)->isEqualTo(
-          chr(0x45).
-          chr(0).chr(11).
-          'printer-uri'.
-          chr(0).chr(28).
-          'http://localhost/printer/pdf'
+        $results = $builder->buildProperty('orientation-requested', 'landscape');
+        $this->assertEquals(
+            chr(0x23).
+            chr(0).chr(21).
+            'orientation-requested'.
+            chr(0).chr(0x9).
+            'landscape',
+            $results
         );
 
-        $jobUri = $builder->buildProperty('job-uri', 'http://localhost/job/8');
-        $this->string($jobUri)->isEqualTo(
-          chr(0x45).
-          chr(0).chr(7).
-          'job-uri'.
-          chr(0).chr(22).
-          'http://localhost/job/8'
+        $results = $builder->buildProperty('printer-uri', 'http://localhost/printer/pdf');
+        $this->assertEquals(
+            chr(0x45).
+            chr(0).chr(11).
+            'printer-uri'.
+            chr(0).chr(28).
+            'http://localhost/printer/pdf',
+            $results
         );
 
-        $jobUri = $builder->buildProperty('purge-jobs', true);
-        $this->string($jobUri)->isEqualTo(
-          chr(0x22).
-          chr(0).chr(10).
-          'purge-jobs'.
-          chr(0).chr(0x01).
-          chr(0x01)
+        $results = $builder->buildProperty('job-uri', 'http://localhost/job/8');
+        $this->assertEquals(
+            chr(0x45).
+            chr(0).chr(7).
+            'job-uri'.
+            chr(0).chr(22).
+            'http://localhost/job/8',
+            $results
+        );
+
+        $results = $builder->buildProperty('purge-jobs', true);
+        $this->assertEquals(
+            chr(0x22).
+            chr(0).chr(10).
+            'purge-jobs'.
+            chr(0).chr(0x01).
+            chr(0x01),
+            $results
         );
     }
 
@@ -204,18 +220,16 @@ class Builder extends atoum\test
     {
         $builder = new \Smalot\Cups\Builder\Builder();
 
-        $type = $builder->getTypeFromProperty('fit-to-page');
-        $this->string($type['tag'])->isEqualTo(chr(0x21));
-        $this->string($type['build'])->isEqualTo('integer');
+        $results = $builder->getTypeFromProperty('fit-to-page');
+        $this->assertEquals(chr(0x21), $results['tag']);
+        $this->assertEquals('integer', $results['build']);
 
-        $type = $builder->getTypeFromProperty('document-format');
-        $this->string($type['tag'])->isEqualTo(chr(0x49));
-        $this->string($type['build'])->isEqualTo('string');
+        $results = $builder->getTypeFromProperty('document-format');
+        $this->assertEquals(chr(0x49), $results['tag']);
+        $this->assertEquals('string', $results['build']);
 
-        $this->exception(
-          function () use ($builder) {
-              $builder->getTypeFromProperty('property not defined');
-          }
-        )->hasMessage('Property not found: "property not defined".');
+        $this->expectException(\Smalot\Cups\CupsException::class);
+        $this->expectExceptionMessage('Property not found: "property not defined".');
+        $builder->getTypeFromProperty('property not defined');
     }
 }
