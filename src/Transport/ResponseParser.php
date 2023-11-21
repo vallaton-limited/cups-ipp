@@ -434,12 +434,7 @@ class ResponseParser
                     $this->attribute_name = $attribute_name;
                 }
                 $this->readValue($attributes_type, $j);
-                $this->body[$attributes_type][$j]['value'] =
-                  $this->interpretAttribute(
-                    $attribute_name,
-                    $tag,
-                    $this->body[$attributes_type][$j]['value']
-                  );
+                $this->body[$attributes_type][$j]['value'] = $this->interpretAttribute($attribute_name, $tag, $this->body[$attributes_type][$j]['value']);
                 break;
 
         }
@@ -795,314 +790,80 @@ class ResponseParser
     }
 
     /**
-     * @param $attributeName
+     * @param $attribute_name
      * @param $value
      *
      * @return array|mixed|string
      */
-    protected function interpretEnum($attributeName, $value)
+    protected function interpretEnum($attribute_name, $value)
     {
         $value_parsed = $this->interpretInteger($value);
 
-        switch ($attributeName) {
-            case 'job-state':
-                switch ($value_parsed) {
-                    case 0x03:
-                        $value = 'pending';
-                        break;
-                    case 0x04:
-                        $value = 'pending-held';
-                        break;
-                    case 0x05:
-                        $value = 'processing';
-                        break;
-                    case 0x06:
-                        $value = 'processing-stopped';
-                        break;
-                    case 0x07:
-                        $value = 'canceled';
-                        break;
-                    case 0x08:
-                        $value = 'aborted';
-                        break;
-                    case 0x09:
-                        $value = 'completed';
-                        break;
-                }
-                if ($value_parsed > 0x09) {
-                    $value = sprintf('Unknown(IETF standards track "job-state" reserved): 0x%x', $value_parsed);
-                }
+        switch ($attribute_name) {
+            case 'client-type':
+                $value = $this->interpretClientType($value_parsed);
                 break;
-            case 'print-quality':
-            case 'print-quality-supported':
-            case 'print-quality-default':
-                switch ($value_parsed) {
-                    case 0x03:
-                        $value = 'draft';
-                        break;
-                    case 0x04:
-                        $value = 'normal';
-                        break;
-                    case 0x05:
-                        $value = 'high';
-                        break;
-                }
-                break;
-            case 'printer-state':
-                switch ($value_parsed) {
-                    case 0x03:
-                        $value = 'idle';
-                        break;
-                    case 0x04:
-                        $value = 'processing';
-                        break;
-                    case 0x05:
-                        $value = 'stopped';
-                        break;
-                }
-                if ($value_parsed > 0x05) {
-                    $value = sprintf('Unknown(IETF standards track "printer-state" reserved): 0x%x', $value_parsed);
-                }
-                break;
-            case 'printer-type':
-                $value = $this::interpretPrinterType($value);
-                break;
-
-            case 'operations-supported':
-                switch ($value_parsed) {
-                    case 0x0000:
-                    case 0x0001:
-                        $value = sprintf('Unknown(reserved) : %s', ord($value));
-                        break;
-                    case 0x0002:
-                        $value = 'Print-Job';
-                        break;
-                    case 0x0003:
-                        $value = 'Print-URI';
-                        break;
-                    case 0x0004:
-                        $value = 'Validate-Job';
-                        break;
-                    case 0x0005:
-                        $value = 'Create-Job';
-                        break;
-                    case 0x0006:
-                        $value = 'Send-Document';
-                        break;
-                    case 0x0007:
-                        $value = 'Send-URI';
-                        break;
-                    case 0x0008:
-                        $value = 'Cancel-Job';
-                        break;
-                    case 0x0009:
-                        $value = 'Get-Job-Attributes';
-                        break;
-                    case 0x000A:
-                        $value = 'Get-Jobs';
-                        break;
-                    case 0x000B:
-                        $value = 'Get-Printer-Attributes';
-                        break;
-                    case 0x000C:
-                        $value = 'Hold-Job';
-                        break;
-                    case 0x000D:
-                        $value = 'Release-Job';
-                        break;
-                    case 0x000E:
-                        $value = 'Restart-Job';
-                        break;
-                    case 0x000F:
-                        $value = 'Unknown(reserved for a future operation)';
-                        break;
-                    case 0x0010:
-                        $value = 'Pause-Printer';
-                        break;
-                    case 0x0011:
-                        $value = 'Resume-Printer';
-                        break;
-                    case 0x0012:
-                        $value = 'Purge-Jobs';
-                        break;
-                    case 0x0013:
-                        $value = 'Set-Printer-Attributes'; // RFC3380
-                        break;
-                    case 0x0014:
-                        $value = 'Set-Job-Attributes'; // RFC3380
-                        break;
-                    case 0x0015:
-                        $value = 'Get-Printer-Supported-Values'; // RFC3380
-                        break;
-                    case 0x0016:
-                        $value = 'Create-Printer-Subscriptions';
-                        break;
-                    case 0x0017:
-                        $value = 'Create-Job-Subscriptions';
-                        break;
-                    case 0x0018:
-                        $value = 'Get-Subscription-Attributes';
-                        break;
-                    case 0x0019:
-                        $value = 'Get-Subscriptions';
-                        break;
-                    case 0x001A:
-                        $value = 'Renew-Subscription';
-                        break;
-                    case 0x001B:
-                        $value = 'Cancel-Subscription';
-                        break;
-                    case 0x001C:
-                        $value = 'Get-Notifications';
-                        break;
-                    case 0x001D:
-                        $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
-                        break;
-                    case 0x001E:
-                        $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
-                        break;
-                    case 0x001F:
-                        $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
-                        break;
-                    case 0x0020:
-                        $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
-                        break;
-                    case 0x0021:
-                        $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
-                        break;
-                    case 0x0022:
-                        $value = 'Enable-Printer';
-                        break;
-                    case 0x0023:
-                        $value = 'Disable-Printer';
-                        break;
-                    case 0x0024:
-                        $value = 'Pause-Printer-After-Current-Job';
-                        break;
-                    case 0x0025:
-                        $value = 'Hold-New-Jobs';
-                        break;
-                    case 0x0026:
-                        $value = 'Release-Held-New-Jobs';
-                        break;
-                    case 0x0027:
-                        $value = 'Deactivate-Printer';
-                        break;
-                    case 0x0028:
-                        $value = 'Activate-Printer';
-                        break;
-                    case 0x0029:
-                        $value = 'Restart-Printer';
-                        break;
-                    case 0x002A:
-                        $value = 'Shutdown-Printer';
-                        break;
-                    case 0x002B:
-                        $value = 'Startup-Printer';
-                        break;
-                }
-
-                if ($value_parsed > 0x002B && $value_parsed <= 0x3FFF) {
-                    $value = sprintf('Unknown(IETF standards track operations reserved): 0x%x', $value_parsed);
-                } elseif ($value_parsed >= 0x4000 && $value_parsed <= 0x8FFF) {
-                    if (method_exists($this, '_getEnumVendorExtensions')) {
-                        $value = $this->_getEnumVendorExtensions($value_parsed);
-                    } else {
-                        $value = sprintf('Unknown(Vendor extension for operations): 0x%x', $value_parsed);
-                    }
-                } elseif ($value_parsed > 0x8FFF) {
-                    $value = sprintf('Unknown operation (should not exists): 0x%x', $value_parsed);
+            case 'document-state':
+                $value = $this->interpretDocumentJobState($value_parsed, $value);
+                if ($value_parsed > 0x09 || $value_parsed == 0x04) {
+                    $value = sprintf('Unknown(IETF standards track "document-state" reserved): 0x%x', $value_parsed);
                 }
                 break;
             case 'finishings':
             case 'finishings-default':
+            case 'finishings-ready':
             case 'finishings-supported':
-                switch ($value_parsed) {
-                    case 3:
-                        $value = 'none';
-                        break;
-                    case 4:
-                        $value = 'staple';
-                        break;
-                    case 5:
-                        $value = 'punch';
-                        break;
-                    case 6:
-                        $value = 'cover';
-                        break;
-                    case 7:
-                        $value = 'bind';
-                        break;
-                    case 8:
-                        $value = 'saddle-stitch';
-                        break;
-                    case 9:
-                        $value = 'edge-stitch';
-                        break;
-                    case 20:
-                        $value = 'staple-top-left';
-                        break;
-                    case 21:
-                        $value = 'staple-bottom-left';
-                        break;
-                    case 22:
-                        $value = 'staple-top-right';
-                        break;
-                    case 23:
-                        $value = 'staple-bottom-right';
-                        break;
-                    case 24:
-                        $value = 'edge-stitch-left';
-                        break;
-                    case 25:
-                        $value = 'edge-stitch-top';
-                        break;
-                    case 26:
-                        $value = 'edge-stitch-right';
-                        break;
-                    case 27:
-                        $value = 'edge-stitch-bottom';
-                        break;
-                    case 28:
-                        $value = 'staple-dual-left';
-                        break;
-                    case 29:
-                        $value = 'staple-dual-top';
-                        break;
-                    case 30:
-                        $value = 'staple-dual-right';
-                        break;
-                    case 31:
-                        $value = 'staple-dual-bottom';
-                        break;
-                }
-                if ($value_parsed > 31) {
-                    $value = sprintf('Unknown(IETF standards track "finishing" reserved): 0x%x', $value_parsed);
+                $value = $this->interpretFinishings($value_parsed);
+                break;
+            case 'job-state':
+            case 'output-device-job-states':
+                $value = $this->interpretDocumentJobState($value_parsed, $value);
+                if ($value_parsed > 0x09) {
+                    $value = sprintf('Unknown(IETF standards track "job-state" reserved): 0x%x', $value_parsed);
                 }
                 break;
-
+            case 'operations-supported':
+                $value = $this->interpretOperationsSupported($value_parsed, $value);
+                break;
             case 'orientation-requested':
             case 'orientation-requested-supported':
             case 'orientation-requested-default':
-                switch ($value_parsed) {
-                    case 0x03:
-                        $value = 'portrait';
-                        break;
-                    case 0x04:
-                        $value = 'landscape';
-                        break;
-                    case 0x05:
-                        $value = 'reverse-landscape';
-                        break;
-                    case 0x06:
-                        $value = 'reverse-portrait';
-                        break;
-                }
-                if ($value_parsed > 0x06) {
-                    $value = sprintf('Unknown(IETF standards track "orientation" reserved): 0x%x', $value_parsed);
-                }
+            case 'image-orientation':
+            case 'image-orientation-default':
+            case 'image-orientation-supported':
+            case 'input-orientation-requested':
+            case 'input-orientation-requested-supported':
+            case 'media-source-feed-orientation':
+                $value = $this->interpretOrientation($value_parsed, $value);
                 break;
-
+            case 'power-state':
+            case 'request-power-state':
+            case 'start-power-state':
+            case 'end-power-state':
+                $value = $this->interpretPowerState($value_parsed);
+                break;
+            case 'print-quality':
+            case 'print-quality-supported':
+            case 'print-quality-default':
+            case 'input-quality':
+            case 'input-quality-supported':
+                $value = $this->interpretPrintQuality($value_parsed, $value);
+                break;
+            case 'printer-state':
+                $value = $this->interpretPrinterState($value_parsed, $value);
+                break;
+            case 'printer-type':
+                $value = $this::interpretPrinterType($value);
+                break;
+            case 'resource-state':
+                $value = $this->interpretResourceState($value_parsed, $value);
+                break;
+            case 'system-state':
+                $value = $this->interpretSystemState($value_parsed, $value);
+                break;
+            case 'transmission-status':
+                $value = $this->interpretTransmissionStatus($value_parsed, $value);
+                break;
             default:
                 break;
         }
@@ -1110,7 +871,7 @@ class ResponseParser
         return $value;
     }
 
-    protected function interpretPrinterType($value)
+    protected function interpretPrinterType($value): array
     {
         $value_parsed = 0;
 
@@ -1203,5 +964,855 @@ class ResponseParser
         ksort($type);
 
         return $type;
+    }
+
+    protected function interpretFinishings($value_parsed): string
+    {
+        switch ($value_parsed) {
+            case 3:
+                $value = 'none';
+                break;
+            case 4:
+                $value = 'staple';
+                break;
+            case 5:
+                $value = 'punch';
+                break;
+            case 6:
+                $value = 'cover';
+                break;
+            case 7:
+                $value = 'bind';
+                break;
+            case 8:
+                $value = 'saddle-stitch';
+                break;
+            case 9:
+                $value = 'edge-stitch';
+                break;
+            case 20:
+                $value = 'staple-top-left';
+                break;
+            case 21:
+                $value = 'staple-bottom-left';
+                break;
+            case 22:
+                $value = 'staple-top-right';
+                break;
+            case 23:
+                $value = 'staple-bottom-right';
+                break;
+            case 24:
+                $value = 'edge-stitch-left';
+                break;
+            case 25:
+                $value = 'edge-stitch-top';
+                break;
+            case 26:
+                $value = 'edge-stitch-right';
+                break;
+            case 27:
+                $value = 'edge-stitch-bottom';
+                break;
+            case 28:
+                $value = 'staple-dual-left';
+                break;
+            case 29:
+                $value = 'staple-dual-top';
+                break;
+            case 30:
+                $value = 'staple-dual-right';
+                break;
+            case 31:
+                $value = 'staple-dual-bottom';
+                break;
+            case 32:
+                $value = 'staple-triple-left';
+                break;
+            case 33:
+                $value = 'staple-triple-top';
+                break;
+            case 34:
+                $value = 'staple-triple-right';
+                break;
+            case 35:
+                $value = 'staple-triple-bottom';
+                break;
+            case 50:
+                $value = 'bind-left';
+                break;
+            case 51:
+                $value = 'bind-top';
+                break;
+            case 52:
+                $value = 'bind-right';
+                break;
+            case 53:
+                $value = 'bind-bottom';
+                break;
+            case 60:
+                $value = 'trim-after-pages';
+                break;
+            case 61:
+                $value = 'trim-after-documents';
+                break;
+            case 62:
+                $value = 'trim-after-copies';
+                break;
+            case 63:
+                $value = 'trim-after-job';
+                break;
+            case 70:
+                $value = 'punch-top-left';
+                break;
+            case 71:
+                $value = 'punch-bottom-left';
+                break;
+            case 72:
+                $value = 'punch-top-right';
+                break;
+            case 73:
+                $value = 'punch-bottom-right';
+                break;
+            case 74:
+                $value = 'punch-dual-left';
+                break;
+            case 75:
+                $value = 'punch-dual-top';
+                break;
+            case 76:
+                $value = 'punch-dual-right';
+                break;
+            case 77:
+                $value = 'punch-dual-bottom';
+                break;
+            case 78:
+                $value = 'punch-triple-left';
+                break;
+            case 79:
+                $value = 'punch-triple-top';
+                break;
+            case 80:
+                $value = 'punch-triple-right';
+                break;
+            case 81:
+                $value = 'punch-triple-bottom';
+                break;
+            case 82:
+                $value = 'punch-quad-left';
+                break;
+            case 83:
+                $value = 'punch-quad-top';
+                break;
+            case 84:
+                $value = 'punch-quad-right';
+                break;
+            case 85:
+                $value = 'punch-quad-bottom';
+                break;
+            case 86:
+                $value = 'punch-multiple-left';
+                break;
+            case 87:
+                $value = 'punch-multiple-top';
+                break;
+            case 88:
+                $value = 'punch-multiple-right';
+                break;
+            case 89:
+                $value = 'punch-multiple-bottom';
+                break;
+            case 90:
+                $value = 'fold-accordion';
+                break;
+            case 91:
+                $value = 'fold-double-gate';
+                break;
+            case 92:
+                $value = 'fold-gate';
+                break;
+            case 93:
+                $value = 'fold-half';
+                break;
+            case 94:
+                $value = 'fold-half-z';
+                break;
+            case 95:
+                $value = 'fold-left-gate';
+                break;
+            case 96:
+                $value = 'fold-letter';
+                break;
+            case 97:
+                $value = 'fold-parallel';
+                break;
+            case 98:
+                $value = 'fold-poster';
+                break;
+            case 99:
+                $value = 'fold-right-gate';
+                break;
+            case 100:
+                $value = 'fold-z';
+                break;
+            case 101:
+                $value = 'fold-engineering-z';
+                break;
+            default:
+                $value = sprintf('Unknown(IETF standards track "finishing" reserved): 0x%x', $value_parsed);
+        }
+
+        return $value;
+    }
+
+    protected function interpretOperationsSupported($value_parsed, $value): string
+    {
+        switch ($value_parsed) {
+            case 0x0000:
+            case 0x0001:
+                $value = sprintf('Unknown(reserved) : %s', ord($value));
+                break;
+            case 0x0002:
+                $value = 'Print-Job';
+                break;
+            case 0x0003:
+                $value = 'Print-URI';
+                break;
+            case 0x0004:
+                $value = 'Validate-Job';
+                break;
+            case 0x0005:
+                $value = 'Create-Job';
+                break;
+            case 0x0006:
+                $value = 'Send-Document';
+                break;
+            case 0x0007:
+                $value = 'Send-URI';
+                break;
+            case 0x0008:
+                $value = 'Cancel-Job';
+                break;
+            case 0x0009:
+                $value = 'Get-Job-Attributes';
+                break;
+            case 0x000A:
+                $value = 'Get-Jobs';
+                break;
+            case 0x000B:
+                $value = 'Get-Printer-Attributes';
+                break;
+            case 0x000C:
+                $value = 'Hold-Job';
+                break;
+            case 0x000D:
+                $value = 'Release-Job';
+                break;
+            case 0x000E:
+                $value = 'Restart-Job';
+                break;
+            case 0x000F:
+                $value = 'Unknown(reserved for a future operation)';
+                break;
+            case 0x0010:
+                $value = 'Pause-Printer';
+                break;
+            case 0x0011:
+                $value = 'Resume-Printer';
+                break;
+            case 0x0012:
+                $value = 'Purge-Jobs';
+                break;
+            case 0x0013:
+                $value = 'Set-Printer-Attributes'; // RFC3380
+                break;
+            case 0x0014:
+                $value = 'Set-Job-Attributes'; // RFC3380
+                break;
+            case 0x0015:
+                $value = 'Get-Printer-Supported-Values'; // RFC3380
+                break;
+            case 0x0016:
+                $value = 'Create-Printer-Subscriptions';
+                break;
+            case 0x0017:
+                $value = 'Create-Job-Subscriptions';
+                break;
+            case 0x0018:
+                $value = 'Get-Subscription-Attributes';
+                break;
+            case 0x0019:
+                $value = 'Get-Subscriptions';
+                break;
+            case 0x001A:
+                $value = 'Renew-Subscription';
+                break;
+            case 0x001B:
+                $value = 'Cancel-Subscription';
+                break;
+            case 0x001C:
+                $value = 'Get-Notifications';
+                break;
+            case 0x001D:
+                $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
+                break;
+            case 0x001E:
+                $value = 'Get-Resource-Attributes';
+                break;
+            case 0x001F:
+                $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
+                break;
+            case 0x0020:
+                $value = 'Get-Resources';
+                break;
+            case 0x0021:
+                $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
+                break;
+            case 0x0022:
+                $value = 'Enable-Printer';
+                break;
+            case 0x0023:
+                $value = 'Disable-Printer';
+                break;
+            case 0x0024:
+                $value = 'Pause-Printer-After-Current-Job';
+                break;
+            case 0x0025:
+                $value = 'Hold-New-Jobs';
+                break;
+            case 0x0026:
+                $value = 'Release-Held-New-Jobs';
+                break;
+            case 0x0027:
+                $value = 'Deactivate-Printer';
+                break;
+            case 0x0028:
+                $value = 'Activate-Printer';
+                break;
+            case 0x0029:
+                $value = 'Restart-Printer';
+                break;
+            case 0x002A:
+                $value = 'Shutdown-Printer';
+                break;
+            case 0x002B:
+                $value = 'Startup-Printer';
+                break;
+            case 0x002C:
+                $value = 'Reprocess-Job';
+                break;
+            case 0x002D:
+                $value = 'Cancel-Current-Job';
+                break;
+            case 0x002E:
+                $value = 'Suspend-Current-Job';
+                break;
+            case 0x002F:
+                $value = 'Resume-Job';
+                break;
+            case 0x0030:
+                $value = 'Promote-Job	b';
+                break;
+            case 0x0031:
+                $value = 'Schedule-Job-After';
+                break;
+            case 0x0033:
+                $value = 'Cancel-Document';
+                break;
+            case 0x0034:
+                $value = 'Get-Document-Attributes';
+                break;
+            case 0x0035:
+                $value = 'Get-Documents';
+                break;
+            case 0x0036:
+                $value = 'Delete-Document';
+                break;
+            case 0x0037:
+                $value = 'Set-Document-Attributes';
+                break;
+            case 0x0038:
+                $value = 'Cancel-Jobs';
+                break;
+            case 0x0039:
+                $value = 'Cancel-My-Jobs';
+                break;
+            case 0x003A:
+                $value = 'Resubmit-Job';
+                break;
+            case 0x003B:
+                $value = 'Close-Job';
+                break;
+            case 0x003C:
+                $value = 'Identify-Printer';
+                break;
+            case 0x003D:
+                $value = 'Validate-Document';
+                break;
+            case 0x003E:
+                $value = 'Add-Document-Images';
+                break;
+            case 0x003F:
+                $value = 'Acknowledge-Document';
+                break;
+            case 0x0040:
+                $value = 'Acknowledge-Identify-Printer';
+                break;
+            case 0x0041:
+                $value = 'Acknowledge-Job';
+                break;
+            case 0x0042:
+                $value = 'Fetch-Document';
+                break;
+            case 0x0043:
+                $value = 'Fetch-Job';
+                break;
+            case 0x0044:
+                $value = 'Get-Output-Device-Attributes';
+                break;
+            case 0x0045:
+                $value = 'Update-Active-Jobs';
+                break;
+            case 0x0046:
+                $value = 'Deregister-Output-Device';
+                break;
+            case 0x0047:
+                $value = 'Update-Document-Status';
+                break;
+            case 0x0048:
+                $value = 'Update-Job-Status';
+                break;
+            case 0x0049:
+                $value = 'Update-Output-Device-Attributes';
+                break;
+            case 0x004A:
+                $value = 'Get-Next-Document-Data';
+                break;
+            case 0x004B:
+                $value = 'Allocate-Printer-Resources';
+                break;
+            case 0x004C:
+                $value = 'Create-Printer';
+                break;
+            case 0x004D:
+                $value = 'Deallocate-Printer-Resources';
+                break;
+            case 0x004E:
+                $value = 'Delete-Printer';
+                break;
+            case 0x004F:
+                $value = 'Get-Printers';
+                break;
+            case 0x0050:
+                $value = 'Shutdown-One-Printer';
+                break;
+            case 0x0051:
+                $value = 'Startup-One-Printer';
+                break;
+            case 0x0052:
+                $value = 'Cancel-Resource';
+                break;
+            case 0x0053:
+                $value = 'Create-Resource';
+                break;
+            case 0x0054:
+                $value = 'Install-Resource';
+                break;
+            case 0x0055:
+                $value = 'Send-Resource-Data';
+                break;
+            case 0x0056:
+                $value = 'Set-Resource-Attributes';
+                break;
+            case 0x0057:
+                $value = 'Create-Resource-Subscriptions';
+                break;
+            case 0x0058:
+                $value = 'Create-System-Subscriptions';
+                break;
+            case 0x0059:
+                $value = 'Disable-All-Printers';
+                break;
+            case 0x005A:
+                $value = 'Enable-All-Printers';
+                break;
+            case 0x005B:
+                $value = 'Get-System-Attributes';
+                break;
+            case 0x005C:
+                $value = 'Get-System-Supported-Values';
+                break;
+            case 0x005D:
+                $value = 'Pause-All-Printers';
+                break;
+            case 0x005E:
+                $value = 'Pause-All-Printers-After-Current-Job';
+                break;
+            case 0x005F:
+                $value = 'Register-Output-Device';
+                break;
+            case 0x0060:
+                $value = 'Restart-System';
+                break;
+            case 0x0061:
+                $value = 'Resume-All-Printers';
+                break;
+            case 0x0062:
+                $value = 'Set-System-Attributes';
+                break;
+            case 0x0063:
+                $value = 'Shutdown-All-Printers';
+                break;
+            case 0x0064:
+                $value = 'Startup-All-Printers';
+                break;
+            case 0x0065:
+                $value = 'Get-Printer-Resources';
+                break;
+            case 0x0066:
+                $value = 'Get-User-Printer-Attributes';
+                break;
+            case 0x0067:
+                $value = 'Restart-One-Printer';
+                break;
+        }
+
+        if ($value_parsed > 0x0067 && $value_parsed <= 0x3FFF) {
+            $value = sprintf('Unknown(IETF standards track "operations-supported" reserved): 0x%x', $value_parsed);
+        } elseif ($value_parsed >= 0x4000 && $value_parsed <= 0x8FFF) {
+            if (method_exists($this, '_getEnumVendorExtensions')) {
+                $value = $this->_getEnumVendorExtensions($value_parsed);
+            } else {
+                $value = sprintf('Unknown(Vendor extension for "operations-supported"): 0x%x', $value_parsed);
+            }
+        } elseif ($value_parsed > 0x8FFF) {
+            $value = sprintf('Unknown "operations-supported" (should not exists): 0x%x', $value_parsed);
+        }
+
+        return $value;
+    }
+
+    protected function interpretPowerState($value_parsed): string
+    {
+        switch ($value_parsed) {
+            case 20:
+                $value = 'on';
+                break;
+            case 21:
+                $value = 'on-vendor1';
+                break;
+            case 22:
+                $value = 'on-vendor2';
+                break;
+            case 23:
+                $value = 'on-vendor3';
+                break;
+            case 24:
+                $value = 'on-vendor4';
+                break;
+            case 25:
+                $value = 'on-vendor5';
+                break;
+            case 30:
+                $value = 'standby';
+                break;
+            case 31:
+                $value = 'standby-vendor1';
+                break;
+            case 32:
+                $value = 'standby-vendor2';
+                break;
+            case 33:
+                $value = 'standby-vendor3';
+                break;
+            case 34:
+                $value = 'standby-vendor4';
+                break;
+            case 35:
+                $value = 'standby-vendor5';
+                break;
+            case 40:
+                $value = 'suspend';
+                break;
+            case 41:
+                $value = 'suspend-vendor1';
+                break;
+            case 42:
+                $value = 'suspend-vendor2';
+                break;
+            case 43:
+                $value = 'suspend-vendor3';
+                break;
+            case 44:
+                $value = 'suspend-vendor4';
+                break;
+            case 45:
+                $value = 'suspend-vendor5';
+                break;
+            case 50:
+                $value = 'reset-soft';
+                break;
+            case 60:
+                $value = 'off-hard';
+                break;
+            case 70:
+                $value = 'hibernate';
+                break;
+            case 71:
+                $value = 'hibernate-vendor1';
+                break;
+            case 72:
+                $value = 'hibernate-vendor2';
+                break;
+            case 73:
+                $value = 'hibernate-vendor3';
+                break;
+            case 74:
+                $value = 'hibernate-vendor4';
+                break;
+            case 75:
+                $value = 'hibernate-vendor5';
+                break;
+            case 80:
+                $value = 'off-soft';
+                break;
+            case 81:
+                $value = 'off-soft-vendor1';
+                break;
+            case 82:
+                $value = 'off-soft-vendor2';
+                break;
+            case 83:
+                $value = 'off-soft-vendor3';
+                break;
+            case 84:
+                $value = 'off-soft-vendor4';
+                break;
+            case 85:
+                $value = 'off-soft-vendor5';
+                break;
+            case 90:
+                $value = 'reset-hard';
+                break;
+            case 100:
+                $value = 'reset-mbr';
+                break;
+            case 110:
+                $value = 'reset-nmi';
+                break;
+            case 120:
+                $value = 'off-soft-graceful';
+                break;
+            case 130:
+                $value = 'off-hard-graceful';
+                break;
+            case 140:
+                $value = 'reset-mbr-graceful';
+                break;
+            case 150:
+                $value = 'reset-soft-graceful';
+                break;
+            case 160:
+                $value = 'reset-hard-graceful';
+                break;
+            case 170:
+                $value = 'reset-init';
+                break;
+            case 180:
+                $value = 'not-applicable';
+                break;
+            case 190:
+                $value = 'no-change';
+                break;
+            default:
+                $value = sprintf('Unknown "power-state" (should not exists): 0x%x', $value_parsed);
+        }
+
+        return $value;
+    }
+
+    protected function interpretDocumentJobState($value_parsed, $value): string
+    {
+        switch ($value_parsed) {
+            case 0x03:
+                $value = 'pending';
+                break;
+            case 0x04:
+                $value = 'pending-held';
+                break;
+            case 0x05:
+                $value = 'processing';
+                break;
+            case 0x06:
+                $value = 'processing-stopped';
+                break;
+            case 0x07:
+                $value = 'canceled';
+                break;
+            case 0x08:
+                $value = 'aborted';
+                break;
+            case 0x09:
+                $value = 'completed';
+                break;
+        }
+
+        return $value;
+    }
+
+    protected function interpretPrinterState($value_parsed, $value): string
+    {
+        switch ($value_parsed) {
+            case 0x03:
+                $value = 'idle';
+                break;
+            case 0x04:
+                $value = 'processing';
+                break;
+            case 0x05:
+                $value = 'stopped';
+                break;
+        }
+
+        if ($value_parsed < 0x03 || $value_parsed > 0x05) {
+            $value = sprintf('Unknown(IETF standards track "printer-state" reserved): 0x%x', $value_parsed);
+        }
+
+        return $value;
+    }
+
+    protected function interpretSystemState($value_parsed, $value): string
+    {
+        if ($value_parsed < 0x03 || $value_parsed > 0x05) {
+            $value = sprintf('Unknown(IETF standards track "system-state" reserved): 0x%x', $value_parsed);
+        } else {
+            $value = $this->interpretPrinterState($value_parsed, $value);
+        }
+
+        return $value;
+    }
+
+    protected function interpretResourceState($value_parsed, $value): string
+    {
+        switch ($value_parsed) {
+            case 0x03:
+                $value = 'pending';
+                break;
+            case 0x04:
+                $value = 'available';
+                break;
+            case 0x05:
+                $value = 'installed';
+                break;
+            case 0x06:
+                $value = 'canceled';
+                break;
+            case 0x07:
+                $value = 'aborted';
+                break;
+        }
+
+        if ($value_parsed < 0x03 || $value_parsed > 0x09) {
+            $value = sprintf('Unknown(IETF standards track "resource-state" reserved): 0x%x', $value_parsed);
+        }
+
+        return $value;
+    }
+
+    protected function interpretTransmissionStatus($value_parsed, $value): string
+    {
+        switch ($value_parsed) {
+            case 0x03:
+                $value = 'pending';
+                break;
+            case 0x04:
+                $value = 'pending-retry';
+                break;
+            case 0x05:
+                $value = 'processing';
+                break;
+            case 0x07:
+                $value = 'canceled';
+                break;
+            case 0x08:
+                $value = 'aborted';
+                break;
+            case 0x09:
+                $value = 'completed';
+                break;
+        }
+
+        if ($value_parsed < 0x03 || $value_parsed > 0x09) {
+            $value = sprintf('Unknown(IETF standards track "transmission-status" reserved): 0x%x', $value_parsed);
+        }
+
+        return $value;
+    }
+
+    protected function interpretPrintQuality($value_parsed, $value): string
+    {
+        switch ($value_parsed) {
+            case 0x03:
+                $value = 'draft';
+                break;
+            case 0x04:
+                $value = 'normal';
+                break;
+            case 0x05:
+                $value = 'high';
+                break;
+        }
+
+        if ($value_parsed < 0x03 || $value_parsed > 0x05) {
+            $value = sprintf('Unknown(IETF standards track "print-quality"): 0x%x', $value_parsed);
+        }
+
+        return $value;
+    }
+
+    protected function interpretOrientation($value_parsed, $value): string
+    {
+        switch ($value_parsed) {
+            case 0x03:
+                $value = 'portrait';
+                break;
+            case 0x04:
+                $value = 'landscape';
+                break;
+            case 0x05:
+                $value = 'reverse-landscape';
+                break;
+            case 0x06:
+                $value = 'reverse-portrait';
+                break;
+        }
+
+        if ($value_parsed < 0x03 || $value_parsed > 0x06) {
+            $value = sprintf('Unknown(IETF standards track "orientation" reserved): 0x%x', $value_parsed);
+        }
+
+        return $value;
+    }
+
+    protected function interpretClientType($value_parsed): string
+    {
+        switch ($value_parsed) {
+            case 0x03:
+                $value = 'application';
+                break;
+            case 0x04:
+                $value = 'operating-system';
+                break;
+            case 0x05:
+                $value = 'driver';
+                break;
+            case 0x06:
+                $value = 'other';
+                break;
+            default:
+                $value = sprintf('Unknown(IETF standards track "client-type" reserved): 0x%x', $value_parsed);
+        }
+
+        return $value;
     }
 }
