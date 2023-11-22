@@ -145,7 +145,7 @@ use Smalot\Cups\Manager\PrinterManager;
 use Smalot\Cups\Transport\Client;
 use Smalot\Cups\Transport\ResponseParser;
 
-$client = new Client('username', 'password', ['remote_socket' => 'tcp://server-ip:632']);
+$client = new Client('username', 'password', ['remote_socket' => 'tcp://server-ip:631']);
 $builder = new Builder();
 $responseParser = new ResponseParser();
 
