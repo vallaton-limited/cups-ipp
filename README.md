@@ -36,7 +36,6 @@ First of all, check if you have correct access to this file: `/var/run/cups/cups
 
 ### List printers
 
-
 ````php
 <?php
 
@@ -128,6 +127,36 @@ if (!empty($printers)) {
     $job->addAttribute('media', 'A4');
     $job->addAttribute('fit-to-page', true);
     $result = $jobManager->send($printer, $job);
+}
+
+````
+
+### Remote CUPS server
+
+You can easily connect to a remote CUPS server by supplying the connection details when constructing the Client.
+````php
+<?php
+
+include 'vendor/autoload.php';
+
+use Smalot\Cups\Builder\Builder;
+use Smalot\Cups\Manager\JobManager;
+use Smalot\Cups\Manager\PrinterManager;
+use Smalot\Cups\Transport\Client;
+use Smalot\Cups\Transport\ResponseParser;
+
+$client = new Client('username', 'password', ['remote_socket' => 'tcp://server-ip:632']);
+$builder = new Builder();
+$responseParser = new ResponseParser();
+
+$printerManager = new PrinterManager($builder, $client, $responseParser);
+$printer = $printerManager->findByUri('ipp://localhost:631/printers/HP-Photosmart-C4380-series');
+
+$jobManager = new JobManager($builder, $client, $responseParser);
+$jobs = $jobManager->getList($printer, false, 0, 'completed');
+
+foreach ($jobs as $job) {
+    echo '#'.$job->getId().' '.$job->getName().' - '.$job->getState().PHP_EOL;
 }
 
 ````
