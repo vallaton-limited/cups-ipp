@@ -28,16 +28,16 @@ class PrinterManager extends atoum\test
         $printerManager = new \Smalot\Cups\Manager\PrinterManager($builder, $client, $responseParser);
         $printerManager->setCharset('utf-8');
         $printerManager->setLanguage('fr-fr');
-        $printerManager->setOperationId(5);
+        $printerManager->setRequestId(5);
         $printerManager->setUsername('testuser');
 
         $this->string($printerManager->getCharset())->isEqualTo('utf-8');
         $this->string($printerManager->getLanguage())->isEqualTo('fr-fr');
-        $this->integer($printerManager->getOperationId())->isEqualTo(5);
+        $this->integer($printerManager->getRequestId())->isEqualTo(5);
         $this->string($printerManager->getUsername())->isEqualTo('testuser');
 
-        $this->integer($printerManager->getOperationId('current'))->isEqualTo(5);
-        $this->integer($printerManager->getOperationId('new'))->isEqualTo(6);
+        $this->integer($printerManager->getRequestId('current'))->isEqualTo(5);
+        $this->integer($printerManager->getRequestId('new'))->isEqualTo(6);
     }
 
     public function testFindByUri()
@@ -49,7 +49,7 @@ class PrinterManager extends atoum\test
         $printerManager = new \Smalot\Cups\Manager\PrinterManager($builder, $client, $responseParser);
         $printerManager->setCharset('utf-8');
         $printerManager->setLanguage('fr-fr');
-        $printerManager->setOperationId(5);
+        $printerManager->setRequestId(5);
         $printerManager->setUsername('testuser');
 
         $printer = $printerManager->findByUri($this->printerUri);

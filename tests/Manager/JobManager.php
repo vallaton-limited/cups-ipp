@@ -26,15 +26,15 @@ class JobManager extends TestCase
         $job_manager = new \Smalot\Cups\Manager\JobManager($builder, $client, $response_parser);
         $job_manager->setCharset('utf-8');
         $job_manager->setLanguage('fr-fr');
-        $job_manager->setOperationId(5);
+        $job_manager->setRequestId(5);
         $job_manager->setUsername('testuser');
 
         $this->assertEquals('utf-8', $job_manager->getCharset());
         $this->assertEquals('fr-fr', $job_manager->getLanguage());
-        $this->assertEquals(5, $job_manager->getOperationId());
+        $this->assertEquals(5, $job_manager->getRequestId());
         $this->assertEquals('testuser', $job_manager->getUsername());
-        $this->assertEquals(5, $job_manager->getOperationId('current'));
-        $this->assertEquals(6, $job_manager->getOperationId('new'));
+        $this->assertEquals(5, $job_manager->getRequestId('current'));
+        $this->assertEquals(6, $job_manager->getRequestId('new'));
     }
 
     public function testGetListEmpty()

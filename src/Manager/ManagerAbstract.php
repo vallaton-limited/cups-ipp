@@ -19,7 +19,7 @@ class ManagerAbstract
 
     use Traits\CharsetAware;
     use Traits\LanguageAware;
-    use Traits\OperationIdAware;
+    use Traits\RequestIdAware;
     use Traits\UsernameAware;
 
     /**
@@ -58,7 +58,7 @@ class ManagerAbstract
 
         $this->setCharset('us-ascii');
         $this->setLanguage('en-us');
-        $this->setOperationId(0);
+        $this->setRequestId(0);
         $this->setUsername('');
     }
 

@@ -11,9 +11,9 @@ use Http\Client\Common\Plugin\ErrorPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Client\Socket\Client as SocketHttpClient;
 use Psr\Http\Message\RequestInterface;
-use Smalot\Cups\CupsException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
+use Smalot\Cups\CupsException;
 
 /**
  * Class Client
@@ -30,7 +30,7 @@ class Client implements ClientInterface
     const AUTHTYPE_DIGEST = 'digest';
 
     /**
-     * @var PluginClient
+     * @var ClientInterface
      */
     protected $http_client;
 

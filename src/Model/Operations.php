@@ -104,6 +104,24 @@ class Operations
     const GET_USER_PRINTER_ATTRIBUTES = 0x0066;
     const RESTART_ONE_PRINTER = 0x0067;
 
+    const CUPS_GET_DEFAULT = 0x4001;
+    const CUPS_GET_PRINTERS = 0x4002;
+    const CUPS_ADD_MODIFY_PRINTER = 0x4003;
+    const CUPS_DELETE_PRINTER = 0x4004;
+    const CUPS_GET_CLASSES = 0x4005;
+    const CUPS_ADD_MODIFY_CLASS = 0x4006;
+    const CUPS_DELETE_CLASS = 0x4007;
+    const CUPS_ACCEPT_JOBS = 0x4008;
+    const CUPS_REJECT_JOBS = 0x4009;
+    const CUPS_SET_DEFAULT = 0x400A;
+    const CUPS_GET_DEVICES = 0x400B;
+    const CUPS_GET_PPDS = 0x400C;
+    const CUPS_MOVE_JOB = 0x400D;
+    const CUPS_AUTHENTICATE_JOB = 0x400E;
+    const CUPS_GET_PPD = 0x400F;
+    const CUPS_GET_DOCUMENT = 0x4027;
+    const CUPS_CREATE_LOCAL_PRINTER = 0x4028;
+
     /**
      * Convert a command constant into a usable byte string
      *
@@ -112,14 +130,14 @@ class Operations
      * @return string
      * @throws CupsException
      */
-    public static function getCommandBytes($const): string
+    public static function getOperationID($const): string
     {
         $parts = str_split(str_pad(dechex($const), 4,'0', STR_PAD_LEFT), 2);
         if (count($parts) === 2) {
             return chr(hexdec('0x'.$parts[0])) . chr(hexdec('0x'.$parts[1]));
         }
 
-        throw new CupsException("Invalid command");
+        throw new CupsException("Invalid Operation");
     }
 
     /**

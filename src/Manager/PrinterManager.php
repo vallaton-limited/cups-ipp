@@ -4,9 +4,12 @@ namespace Smalot\Cups\Manager;
 
 use Psr\Http\Client\ClientExceptionInterface;
 use Smalot\Cups\CupsException;
+use Smalot\Cups\Model\Operations;
 use Smalot\Cups\Model\Printer;
 use Smalot\Cups\Model\PrinterInterface;
 use GuzzleHttp\Psr7\Request;
+use Smalot\Cups\Tags\AttributeGroup;
+use Smalot\Cups\Transport\IppRequest;
 
 /**
  * Class Printer
@@ -192,24 +195,22 @@ class PrinterManager extends ManagerAbstract
      */
     protected function prepareGetListRequest(array $attributes = []): Request
     {
-        $operation_id = $this->buildOperationId();
+        $request_id = $this->buildRequestId();
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
 
         $meta_attributes = $this->buildPrinterRequestedAttributes($attributes);
-
-        $content = $this->getVersion() // IPP version 1.1
-          .chr(0x40).chr(0x02) // operation:  cups vendor extension: get printers
-          .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
-          .$charset
-          .$language
-          .$meta_attributes
-          .chr(0x03);
+        $request = new IppRequest($this->getVersion(), Operations::CUPS_GET_PRINTERS);
+        $request->addAddAttribute($request_id)
+                ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
+                ->addAddAttribute($charset)
+                ->addAddAttribute($language)
+                ->addAddAttribute($meta_attributes)
+                ->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
-        return new Request('POST', '/', $headers, $content);
+        return new Request('POST', '/', $headers, $request);
     }
 
     /**
@@ -220,7 +221,7 @@ class PrinterManager extends ManagerAbstract
      */
     protected function prepareReloadAttributesRequest(PrinterInterface $printer): Request
     {
-        $operation_id = $this->buildOperationId();
+        $request_id = $this->buildRequestId();
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
         $username = $this->buildUsername();
@@ -228,20 +229,19 @@ class PrinterManager extends ManagerAbstract
         $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
         $printer_attributes = '';
 
-        $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x0b) // Print-URI | operation-id
-          .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
-          .$charset
-          .$language
-          .$username
-          .$printer_uri
-          .$printer_attributes
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+        $request = new IppRequest($this->getVersion(), Operations::GET_PRINTER_ATTRIBUTES);
+        $request->addAddAttribute($request_id)
+                ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
+                ->addAddAttribute($charset)
+                ->addAddAttribute($language)
+                ->addAddAttribute($username)
+                ->addAddAttribute($printer_uri)
+                ->addAddAttribute($printer_attributes)
+                ->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
-        return new Request('POST', '/', $headers, $content);
+        return new Request('POST', '/', $headers, $request);
     }
 
     /**
@@ -252,24 +252,23 @@ class PrinterManager extends ManagerAbstract
      */
     protected function prepareGetDefaultRequest(array $attributes = []): Request
     {
-        $operation_id = $this->buildOperationId();
+        $request_id = $this->buildRequestId();
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
 
         $meta_attributes = $this->buildPrinterRequestedAttributes($attributes);
 
-        $content = $this->getVersion() // IPP version 1.1
-          .chr(0x40).chr(0x01) // operation:  cups vendor extension: get default printer
-          .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
-          .$charset
-          .$language
-          .$meta_attributes
-          .chr(0x03);
+        $request = new IppRequest($this->getVersion(), Operations::CUPS_GET_DEFAULT);
+        $request->addAddAttribute($request_id)
+                ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
+                ->addAddAttribute($charset)
+                ->addAddAttribute($language)
+                ->addAddAttribute($meta_attributes)
+                ->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
-        return new Request('POST', '/', $headers, $content);
+        return new Request('POST', '/', $headers, $request);
     }
 
     /**
@@ -280,26 +279,25 @@ class PrinterManager extends ManagerAbstract
      */
     protected function preparePauseRequest(PrinterInterface $printer): Request
     {
-        $operation_id = $this->buildOperationId();
+        $request_id = $this->buildRequestId();
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
         $username = $this->buildUsername();
 
         $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
 
-        $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x10) // Pause-Printer | operation-id
-          .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
-          .$charset
-          .$language
-          .$username
-          .$printer_uri
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+        $request = new IppRequest($this->getVersion(), Operations::PAUSE_PRINTER);
+        $request->addAddAttribute($request_id)
+                ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
+                ->addAddAttribute($charset)
+                ->addAddAttribute($language)
+                ->addAddAttribute($username)
+                ->addAddAttribute($printer_uri)
+                ->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
-        return new Request('POST', '/admin/', $headers, $content);
+        return new Request('POST', '/admin/', $headers, $request);
     }
 
     /**
@@ -310,26 +308,25 @@ class PrinterManager extends ManagerAbstract
      */
     protected function prepareResumeRequest(PrinterInterface $printer): Request
     {
-        $operation_id = $this->buildOperationId();
+        $request_id = $this->buildRequestId();
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
         $username = $this->buildUsername();
 
         $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
 
-        $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x11) // Resume-Printer | operation-id
-          .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
-          .$charset
-          .$language
-          .$username
-          .$printer_uri
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+        $request = new IppRequest($this->getVersion(), Operations::RESUME_PRINTER);
+        $request->addAddAttribute($request_id)
+                ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
+                ->addAddAttribute($charset)
+                ->addAddAttribute($language)
+                ->addAddAttribute($username)
+                ->addAddAttribute($printer_uri)
+                ->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
-        return new Request('POST', '/admin/', $headers, $content);
+        return new Request('POST', '/admin/', $headers, $request);
     }
 
     /**
@@ -340,7 +337,7 @@ class PrinterManager extends ManagerAbstract
      */
     protected function preparePurgeRequest(PrinterInterface $printer): Request
     {
-        $operation_id = $this->buildOperationId();
+        $request_id = $this->buildRequestId();
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
         $username = $this->buildUsername();
@@ -348,20 +345,19 @@ class PrinterManager extends ManagerAbstract
         $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
         $purge_job = $this->buildProperty('purge-jobs', 1);
 
-        $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x12) // purge-Jobs | operation-id
-          .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
-          .$charset
-          .$language
-          .$username
-          .$printer_uri
-          .$purge_job
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+        $request = new IppRequest($this->getVersion(), Operations::PURGE_JOBS);
+        $request->addAddAttribute($request_id)
+                ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
+                ->addAddAttribute($charset)
+                ->addAddAttribute($language)
+                ->addAddAttribute($username)
+                ->addAddAttribute($printer_uri)
+                ->addAddAttribute($purge_job)
+                ->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
-        return new Request('POST', '/admin/', $headers, $content);
+        return new Request('POST', '/admin/', $headers, $request);
     }
 
     /**
