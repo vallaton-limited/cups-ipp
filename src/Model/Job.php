@@ -24,9 +24,9 @@ class Job implements JobInterface
     const SIDES_ONE_SIDED = 'one-sided';
 
     /**
-     * @var int
+     * @var null|int
      */
-    protected $id;
+    protected $id = null;
 
     /**
      * @var string
@@ -46,7 +46,7 @@ class Job implements JobInterface
     /**
      * @var string
      */
-    protected $page_ranges;
+    protected $page_ranges = 'all';
 
     /**
      * @var int
@@ -54,14 +54,14 @@ class Job implements JobInterface
     protected $copies;
 
     /**
-     * @var int
+     * @var string
      */
-    protected $sides;
+    protected $sides = self::SIDES_ONE_SIDED;
 
     /**
      * @var int
      */
-    protected $fidelity;
+    protected $fidelity = 0;
 
     /**
      * @var array
@@ -88,9 +88,9 @@ class Job implements JobInterface
     }
 
     /**
-     * @return int
+     * @return null|int
      */
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }
@@ -208,19 +208,19 @@ class Job implements JobInterface
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getSides(): int
+    public function getSides(): string
     {
         return $this->sides ?: self::SIDES_ONE_SIDED;
     }
 
     /**
-     * @param int $sides
+     * @param string $sides
      *
      * @return Job
      */
-    public function setSides(int $sides): JobInterface
+    public function setSides(string $sides): JobInterface
     {
         $this->sides = $sides;
 

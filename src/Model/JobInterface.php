@@ -11,9 +11,9 @@ interface JobInterface
 {
 
     /**
-     * @return int
+     * @return null|int
      */
-    public function getId(): int;
+    public function getId();
 
     /**
      * @param int $id
@@ -95,16 +95,16 @@ interface JobInterface
     public function setCopies(int $copies);
 
     /**
-     * @return int
+     * @return string
      */
-    public function getSides(): int;
+    public function getSides(): string;
 
     /**
-     * @param int $sides
+     * @param string $sides
      *
      * @return JobInterface|PrinterInterface
      */
-    public function setSides(int $sides);
+    public function setSides(string $sides);
 
     /**
      * @return int

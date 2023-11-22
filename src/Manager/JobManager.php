@@ -6,8 +6,10 @@ use Psr\Http\Client\ClientExceptionInterface;
 use Smalot\Cups\CupsException;
 use Smalot\Cups\Model\Job;
 use Smalot\Cups\Model\JobInterface;
+use Smalot\Cups\Model\Operations;
 use Smalot\Cups\Model\PrinterInterface;
 use GuzzleHttp\Psr7\Request;
+use Smalot\Cups\Tags\AttributeGroup;
 
 /**
  * Class Job
@@ -248,9 +250,9 @@ class JobManager extends ManagerAbstract
         $meta_which_jobs = $which_jobs == 'completed' ? $this->buildProperty('which-jobs', $which_jobs, true) : '';
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x0A) // Get-Jobs | operation-id
+          .Operations::getCommandBytes(Operations::GET_JOBS)
           .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$username
@@ -273,7 +275,7 @@ class JobManager extends ManagerAbstract
             $content .= $this->buildProperty('requested-attributes', 'all');
         }
 
-        $content .= chr(0x03); // end-of-attributes | end-of-attributes-tag
+        $content .= chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
@@ -297,9 +299,9 @@ class JobManager extends ManagerAbstract
         $job_uri = $this->buildProperty('job-uri', $job->getUri());
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x09) // Get-Job-Attributes | operation-id
+          .Operations::getCommandBytes(Operations::GET_JOB_ATTRIBUTES)
           .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$job_uri
@@ -328,7 +330,7 @@ class JobManager extends ManagerAbstract
 
             $content .= $this->buildProperty('requested-attributes', $attributes_group);
         }
-        $content .= chr(0x03); // end-of-attributes | end-of-attributes-tag
+        $content .= chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
@@ -359,20 +361,20 @@ class JobManager extends ManagerAbstract
         $deleted_attributes = '';
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x14) // Set-Job-Attributes | operation-id
+          .Operations::getCommandBytes(Operations::SET_JOB_ATTRIBUTES)
           .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$job_uri
           .$username
-          .chr(0x02) // start job-attributes
+          .chr(AttributeGroup::JOB_ATTRIBUTES_TAG)
           .$job_attributes // set by setAttribute($attribute,$value)
           .$copies
           .$sides
           .$page_ranges
           .$deleted_attributes
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+          .chr(AttributeGroup::END_OF_ATTRIBUTES_TAG); // end-of-attributes | end-of-attributes-tag
 
         $headers = ['Content-Type' => 'application/ipp'];
 
@@ -406,9 +408,9 @@ class JobManager extends ManagerAbstract
         $job_attributes = $this->buildProperties($job->getAttributes());
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x05) // Create-Job | operation-id
+          .Operations::getCommandBytes(Operations::CREATE_JOB)
           .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$printer_uri
@@ -417,12 +419,12 @@ class JobManager extends ManagerAbstract
           .$fidelity
           .$timeout_attribute
           .$operation_attributes
-          .chr(0x02) // start job-attributes | job-attributes-tag
+          .chr(AttributeGroup::JOB_ATTRIBUTES_TAG)
           .$copies
           .$sides
           .$page_ranges
           .$job_attributes
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+          .chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
@@ -448,16 +450,16 @@ class JobManager extends ManagerAbstract
         $message = '';
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x08) // cancel-Job | operation-id
+          .Operations::getCommandBytes(Operations::CANCEL_JOB)
           .$operation_id //           request-id
           .$request_body_malformed
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$job_uri
           .$username
           .$message
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+          .chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
@@ -482,15 +484,15 @@ class JobManager extends ManagerAbstract
         $message = '';
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x0d) // release-Job | operation-id
+          .Operations::getCommandBytes(Operations::RELEASE_JOB)
           .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$job_uri
           .$username
           .$message
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+          .chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
@@ -536,16 +538,16 @@ class JobManager extends ManagerAbstract
           .$until;
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x0C) // hold-Job | operation-id
+          .Operations::getCommandBytes(Operations::HOLD_JOB)
           .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$username
           .$job_uri
           .$message
           .$hold_until
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+          .chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
@@ -570,15 +572,15 @@ class JobManager extends ManagerAbstract
         $message = '';
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x0E) // release-Job | operation-id
+          .Operations::getCommandBytes(Operations::RESTART_JOB)
           .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$job_uri
           .$username
           .$message
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+          .chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
@@ -610,9 +612,9 @@ class JobManager extends ManagerAbstract
         $last_document = $this->buildProperty('last-document', $is_last);
 
         $content = $this->getVersion() // 1.1  | version-number
-          .chr(0x00).chr(0x06) // Send-Document | operation-id
+          .Operations::getCommandBytes(Operations::SEND_DOCUMENT)
           .$operation_id //           request-id
-          .chr(0x01) // start operation-attributes | operation-attributes-tag
+          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
           .$charset
           .$language
           .$job_uri
@@ -622,7 +624,7 @@ class JobManager extends ManagerAbstract
           .$mime_media_type
           .$operation_attributes
           .$last_document
-          .chr(0x03); // end-of-attributes | end-of-attributes-tag
+          .chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         if ($part['type'] == Job::CONTENT_FILE) {
             $data = file_get_contents($part['filename']);

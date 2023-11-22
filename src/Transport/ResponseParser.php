@@ -3,6 +3,7 @@
 namespace Smalot\Cups\Transport;
 
 use Psr\Http\Message\ResponseInterface;
+use Smalot\Cups\Model\Operations;
 
 /**
  * Class ResponseParser
@@ -373,7 +374,6 @@ class ResponseParser
 
     protected function readAttribute($attributes_type)
     {
-
         $tag = ord($this->content[$this->offset]);
 
         $this->offset += 1;
@@ -501,7 +501,7 @@ class ResponseParser
                 $tag = 'endCollection';
                 break;
             case 0x40:
-                $tag = 'IETF reserved text string';
+                $tag = 'IETF reserved (generic character-string)';
                 break;
             case 0x41:
                 $tag = 'textWithoutLanguage';
@@ -556,6 +556,26 @@ class ResponseParser
         return $tag;
     }
 
+    protected function readCollectionValue(&$output)
+    {
+        if (isset($this->content[$this->offset + 1])) {
+            $length = ord($this->content[$this->offset]) * 256 + ord($this->content[$this->offset + 1]);
+            $this->offset += 2;
+            $output = '';
+
+            for ($i = 0; $i < $length; $i++) {
+                if (!isset($this->content[$this->offset])) {
+                    return false;
+                }
+
+                $output .= $this->content[$this->offset];
+                $this->offset += 1;
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @param $attributes_type
      * @param $j
@@ -564,32 +584,17 @@ class ResponseParser
      */
     protected function readCollection($attributes_type, $j)
     {
-        $name_length = ord($this->content[$this->offset]) * 256 + ord($this->content[$this->offset + 1]);
-        $this->offset += 2;
-        $name = '';
 
-        for ($i = 0; $i < $name_length; $i++) {
-            $name .= $this->content[$this->offset];
-            $this->offset += 1;
-            if ($this->offset > strlen($this->content)) {
-                return;
-            }
+        dd('her e');
+        $collection_name = $attribute_name = $collection_value = $value = '';
+        if (!$this->readCollectionValue($collection_name)) {
+            return;
+        }
+        if (!$this->readCollectionValue($attribute_name)) {
+            return;
         }
 
-        $collection_name = $name;
-        $name_length = ord($this->content[$this->offset]) * 256 + ord($this->content[$this->offset + 1]);
-        $this->offset += 2;
-        $name = '';
 
-        for ($i = 0; $i < $name_length; $i++) {
-            $name .= $this->content[$this->offset];
-            $this->offset += 1;
-            if ($this->offset > strlen($this->content)) {
-                return;
-            }
-        }
-
-        $attribute_name = $name;
         if ($attribute_name == '') {
             $attribute_name = $this->last_attribute_name;
             $this->collection_key[$this->collection_depth]++;
@@ -598,35 +603,16 @@ class ResponseParser
         }
         $this->last_attribute_name = $attribute_name;
 
-
         $tag = $this->readTag(ord($this->content[$this->offset]));
         $this->offset++;
         $type = $tag;
-        $name_length = ord($this->content[$this->offset]) * 256 + ord($this->content[$this->offset + 1]);
-        $this->offset += 2;
-        $name = '';
 
-        for ($i = 0; $i < $name_length; $i++) {
-            $name .= $this->content[$this->offset];
-            $this->offset += 1;
-
-            if ($this->offset > strlen($this->content)) {
-                return;
-            }
+        if (!$this->readCollectionValue($collection_value)) {
+            return;
         }
 
-        $collection_value = $name;
-        $value_length = ord($this->content[$this->offset]) * 256 + ord($this->content[$this->offset + 1]);
-        $this->offset += 2;
-        $value = '';
-
-        for ($i = 0; $i < $value_length; $i++) {
-            if ($this->offset >= strlen($this->content)) {
-                return;
-            }
-
-            $value .= $this->content[$this->offset];
-            $this->offset += 1;
+        if (!$this->readCollectionValue($value)) {
+            return;
         }
 
         $object = &$this->collection;
@@ -1167,329 +1153,37 @@ class ResponseParser
 
     protected function interpretOperationsSupported($value_parsed, $value): string
     {
-        switch ($value_parsed) {
-            case 0x0000:
-            case 0x0001:
-                $value = sprintf('Unknown(reserved) : %s', ord($value));
-                break;
-            case 0x0002:
-                $value = 'Print-Job';
-                break;
-            case 0x0003:
-                $value = 'Print-URI';
-                break;
-            case 0x0004:
-                $value = 'Validate-Job';
-                break;
-            case 0x0005:
-                $value = 'Create-Job';
-                break;
-            case 0x0006:
-                $value = 'Send-Document';
-                break;
-            case 0x0007:
-                $value = 'Send-URI';
-                break;
-            case 0x0008:
-                $value = 'Cancel-Job';
-                break;
-            case 0x0009:
-                $value = 'Get-Job-Attributes';
-                break;
-            case 0x000A:
-                $value = 'Get-Jobs';
-                break;
-            case 0x000B:
-                $value = 'Get-Printer-Attributes';
-                break;
-            case 0x000C:
-                $value = 'Hold-Job';
-                break;
-            case 0x000D:
-                $value = 'Release-Job';
-                break;
-            case 0x000E:
-                $value = 'Restart-Job';
-                break;
-            case 0x000F:
-                $value = 'Unknown(reserved for a future operation)';
-                break;
-            case 0x0010:
-                $value = 'Pause-Printer';
-                break;
-            case 0x0011:
-                $value = 'Resume-Printer';
-                break;
-            case 0x0012:
-                $value = 'Purge-Jobs';
-                break;
-            case 0x0013:
-                $value = 'Set-Printer-Attributes'; // RFC3380
-                break;
-            case 0x0014:
-                $value = 'Set-Job-Attributes'; // RFC3380
-                break;
-            case 0x0015:
-                $value = 'Get-Printer-Supported-Values'; // RFC3380
-                break;
-            case 0x0016:
-                $value = 'Create-Printer-Subscriptions';
-                break;
-            case 0x0017:
-                $value = 'Create-Job-Subscriptions';
-                break;
-            case 0x0018:
-                $value = 'Get-Subscription-Attributes';
-                break;
-            case 0x0019:
-                $value = 'Get-Subscriptions';
-                break;
-            case 0x001A:
-                $value = 'Renew-Subscription';
-                break;
-            case 0x001B:
-                $value = 'Cancel-Subscription';
-                break;
-            case 0x001C:
-                $value = 'Get-Notifications';
-                break;
-            case 0x001D:
-                $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
-                break;
-            case 0x001E:
-                $value = 'Get-Resource-Attributes';
-                break;
-            case 0x001F:
-                $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
-                break;
-            case 0x0020:
-                $value = 'Get-Resources';
-                break;
-            case 0x0021:
-                $value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
-                break;
-            case 0x0022:
-                $value = 'Enable-Printer';
-                break;
-            case 0x0023:
-                $value = 'Disable-Printer';
-                break;
-            case 0x0024:
-                $value = 'Pause-Printer-After-Current-Job';
-                break;
-            case 0x0025:
-                $value = 'Hold-New-Jobs';
-                break;
-            case 0x0026:
-                $value = 'Release-Held-New-Jobs';
-                break;
-            case 0x0027:
-                $value = 'Deactivate-Printer';
-                break;
-            case 0x0028:
-                $value = 'Activate-Printer';
-                break;
-            case 0x0029:
-                $value = 'Restart-Printer';
-                break;
-            case 0x002A:
-                $value = 'Shutdown-Printer';
-                break;
-            case 0x002B:
-                $value = 'Startup-Printer';
-                break;
-            case 0x002C:
-                $value = 'Reprocess-Job';
-                break;
-            case 0x002D:
-                $value = 'Cancel-Current-Job';
-                break;
-            case 0x002E:
-                $value = 'Suspend-Current-Job';
-                break;
-            case 0x002F:
-                $value = 'Resume-Job';
-                break;
-            case 0x0030:
-                $value = 'Promote-Job	b';
-                break;
-            case 0x0031:
-                $value = 'Schedule-Job-After';
-                break;
-            case 0x0033:
-                $value = 'Cancel-Document';
-                break;
-            case 0x0034:
-                $value = 'Get-Document-Attributes';
-                break;
-            case 0x0035:
-                $value = 'Get-Documents';
-                break;
-            case 0x0036:
-                $value = 'Delete-Document';
-                break;
-            case 0x0037:
-                $value = 'Set-Document-Attributes';
-                break;
-            case 0x0038:
-                $value = 'Cancel-Jobs';
-                break;
-            case 0x0039:
-                $value = 'Cancel-My-Jobs';
-                break;
-            case 0x003A:
-                $value = 'Resubmit-Job';
-                break;
-            case 0x003B:
-                $value = 'Close-Job';
-                break;
-            case 0x003C:
-                $value = 'Identify-Printer';
-                break;
-            case 0x003D:
-                $value = 'Validate-Document';
-                break;
-            case 0x003E:
-                $value = 'Add-Document-Images';
-                break;
-            case 0x003F:
-                $value = 'Acknowledge-Document';
-                break;
-            case 0x0040:
-                $value = 'Acknowledge-Identify-Printer';
-                break;
-            case 0x0041:
-                $value = 'Acknowledge-Job';
-                break;
-            case 0x0042:
-                $value = 'Fetch-Document';
-                break;
-            case 0x0043:
-                $value = 'Fetch-Job';
-                break;
-            case 0x0044:
-                $value = 'Get-Output-Device-Attributes';
-                break;
-            case 0x0045:
-                $value = 'Update-Active-Jobs';
-                break;
-            case 0x0046:
-                $value = 'Deregister-Output-Device';
-                break;
-            case 0x0047:
-                $value = 'Update-Document-Status';
-                break;
-            case 0x0048:
-                $value = 'Update-Job-Status';
-                break;
-            case 0x0049:
-                $value = 'Update-Output-Device-Attributes';
-                break;
-            case 0x004A:
-                $value = 'Get-Next-Document-Data';
-                break;
-            case 0x004B:
-                $value = 'Allocate-Printer-Resources';
-                break;
-            case 0x004C:
-                $value = 'Create-Printer';
-                break;
-            case 0x004D:
-                $value = 'Deallocate-Printer-Resources';
-                break;
-            case 0x004E:
-                $value = 'Delete-Printer';
-                break;
-            case 0x004F:
-                $value = 'Get-Printers';
-                break;
-            case 0x0050:
-                $value = 'Shutdown-One-Printer';
-                break;
-            case 0x0051:
-                $value = 'Startup-One-Printer';
-                break;
-            case 0x0052:
-                $value = 'Cancel-Resource';
-                break;
-            case 0x0053:
-                $value = 'Create-Resource';
-                break;
-            case 0x0054:
-                $value = 'Install-Resource';
-                break;
-            case 0x0055:
-                $value = 'Send-Resource-Data';
-                break;
-            case 0x0056:
-                $value = 'Set-Resource-Attributes';
-                break;
-            case 0x0057:
-                $value = 'Create-Resource-Subscriptions';
-                break;
-            case 0x0058:
-                $value = 'Create-System-Subscriptions';
-                break;
-            case 0x0059:
-                $value = 'Disable-All-Printers';
-                break;
-            case 0x005A:
-                $value = 'Enable-All-Printers';
-                break;
-            case 0x005B:
-                $value = 'Get-System-Attributes';
-                break;
-            case 0x005C:
-                $value = 'Get-System-Supported-Values';
-                break;
-            case 0x005D:
-                $value = 'Pause-All-Printers';
-                break;
-            case 0x005E:
-                $value = 'Pause-All-Printers-After-Current-Job';
-                break;
-            case 0x005F:
-                $value = 'Register-Output-Device';
-                break;
-            case 0x0060:
-                $value = 'Restart-System';
-                break;
-            case 0x0061:
-                $value = 'Resume-All-Printers';
-                break;
-            case 0x0062:
-                $value = 'Set-System-Attributes';
-                break;
-            case 0x0063:
-                $value = 'Shutdown-All-Printers';
-                break;
-            case 0x0064:
-                $value = 'Startup-All-Printers';
-                break;
-            case 0x0065:
-                $value = 'Get-Printer-Resources';
-                break;
-            case 0x0066:
-                $value = 'Get-User-Printer-Attributes';
-                break;
-            case 0x0067:
-                $value = 'Restart-One-Printer';
-                break;
-        }
-
-        if ($value_parsed > 0x0067 && $value_parsed <= 0x3FFF) {
-            $value = sprintf('Unknown(IETF standards track "operations-supported" reserved): 0x%x', $value_parsed);
+        if (in_array($value_parsed, [0x0000, 0x0001, 0x000F, 0x001D, 0x001F, 0x0021])) {
+            switch ($value_parsed) {
+                default:
+                case 0x0000:
+                case 0x0001:
+                    $return_value = sprintf('Unknown(reserved) : %s', ord($value));
+                    break;
+                case 0x000F:
+                    $return_value = 'Unknown(reserved for a future operation)';
+                    break;
+                case 0x001D:
+                case 0x001F:
+                case 0x0021:
+                $return_value = sprintf('Unknown (reserved IETF "operations"): 0x%x', ord($value));
+                    break;
+            }
         } elseif ($value_parsed >= 0x4000 && $value_parsed <= 0x8FFF) {
             if (method_exists($this, '_getEnumVendorExtensions')) {
-                $value = $this->_getEnumVendorExtensions($value_parsed);
+                $return_value = $this->_getEnumVendorExtensions($value_parsed);
             } else {
-                $value = sprintf('Unknown(Vendor extension for "operations-supported"): 0x%x', $value_parsed);
+                $return_value = sprintf('Unknown(Vendor extension for "operations-supported"): 0x%x', $value_parsed);
             }
+        } elseif ($value_parsed > 0x0067 && $value_parsed <= 0x3FFF) {
+            $return_value = sprintf('Unknown(IETF standards track "operations-supported" reserved): 0x%x', $value_parsed);
         } elseif ($value_parsed > 0x8FFF) {
-            $value = sprintf('Unknown "operations-supported" (should not exists): 0x%x', $value_parsed);
+            $return_value = sprintf('Unknown "operations-supported" (should not exists): 0x%x', $value_parsed);
+        } else {
+            $return_value = Operations::getString($value_parsed);
         }
 
-        return $value;
+        return $return_value;
     }
 
     protected function interpretPowerState($value_parsed): string
