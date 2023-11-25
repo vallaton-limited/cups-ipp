@@ -71,8 +71,8 @@ class Client implements ClientInterface
         }
 
         $message_factory = new HttpFactory();
-        $socket_client = new SocketHttpClient($message_factory, $socket_client_options);
-        $host = preg_match('/unix:\/\//', $socket_client_options['remote_socket']) ? 'http://localhost' : $socket_client_options['remote_socket'];
+        $socket_client = new SocketHttpClient($message_factory, [], $socket_client_options);
+        $host = preg_match('/unix:\/\//', $socket_client_options['remote_socket']) ? 'https://localhost' : $socket_client_options['remote_socket'];
         $this->http_client = new PluginClient(
           $socket_client, [
             new ErrorPlugin(),

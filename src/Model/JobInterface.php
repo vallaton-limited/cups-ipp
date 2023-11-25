@@ -124,9 +124,9 @@ interface JobInterface
     public function getContent(): array;
 
     /**
-     * @param string $filename
-     * @param string $mime_type
-     * @param string $name
+     * @param string      $filename
+     * @param string      $name
+     * @param null|string $mime_type
      *
      * @return JobInterface|PrinterInterface
      */

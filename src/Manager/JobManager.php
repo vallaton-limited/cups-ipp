@@ -230,7 +230,7 @@ class JobManager extends ManagerAbstract
      * @param PrinterInterface $printer
      * @param bool             $my_jobs
      * @param int              $limit
-     * @param string           $which_jobs
+     * @param string           $which_jobs 'all'|'completed'|'not-completed'|''
      * @param bool             $subset
      *
      * @return Request
@@ -247,7 +247,7 @@ class JobManager extends ManagerAbstract
         $meta_limit = $this->buildProperty('limit', $limit, true);
         $meta_my_jobs = $this->buildProperty('my-jobs', $my_jobs, true);
 
-        $meta_which_jobs = $which_jobs == 'completed' ? $this->buildProperty('which-jobs', $which_jobs, true) : '';
+        $meta_which_jobs = in_array($which_jobs, ['completed', 'all', 'not-completed']) ? $this->buildProperty('which-jobs', $which_jobs, true) : '';
 
         $request = new IppRequest($this->version, Operations::GET_JOBS);
         $request->addAddAttribute($operation_id)
@@ -620,8 +620,7 @@ class JobManager extends ManagerAbstract
                 ->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         if ($part['type'] == Job::CONTENT_FILE) {
-            $data = file_get_contents($part['filename']);
-            $request->addAddAttribute($data);
+            $request->addAddAttribute($part['binary']);
         } else {
             $request->addAddAttribute(chr(0x16)); // datahead
             $request->addAddAttribute($part['text']);

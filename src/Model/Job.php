@@ -2,6 +2,8 @@
 
 namespace Smalot\Cups\Model;
 
+use GuzzleHttp\Psr7\MimeType;
+
 /**
  * Class Job
  *
@@ -9,7 +11,6 @@ namespace Smalot\Cups\Model;
  */
 class Job implements JobInterface
 {
-
     use Traits\AttributeAware;
     use Traits\UriAware;
 
@@ -256,9 +257,9 @@ class Job implements JobInterface
     }
 
     /**
-     * @param string $filename
-     * @param string $name
-     * @param string $mime_type
+     * @param string      $filename
+     * @param string      $name
+     * @param null|string $mime_type
      *
      * @return Job
      */
@@ -268,11 +269,15 @@ class Job implements JobInterface
             $name = basename($filename);
         }
 
+        if ($mime_type === '') {
+            $mime_type = MimeType::fromFilename($filename);
+        }
+
         $this->content[] = [
-          'type' => self::CONTENT_FILE,
-          'name' => $name,
-          'mimeType' => $mime_type,
-          'filename' => $filename,
+            'type' => self::CONTENT_FILE,
+            'name' => $name,
+            'mimeType' => $mime_type,
+            'binary' => file_get_contents($filename),
         ];
 
         return $this;
@@ -288,10 +293,10 @@ class Job implements JobInterface
     public function addText(string $text, string $name = '', string $mime_type = 'text/plain'): JobInterface
     {
         $this->content[] = [
-          'type' => self::CONTENT_TEXT,
-          'name' => $name,
-          'mimeType' => $mime_type,
-          'text' => $text,
+            'type' => self::CONTENT_TEXT,
+            'name' => $name,
+            'mimeType' => $mime_type,
+            'text' => $text,
         ];
 
         return $this;

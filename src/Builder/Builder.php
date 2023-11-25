@@ -34,15 +34,22 @@ class Builder
     protected $printer_tags = [];
 
     /**
+     * @var bool
+     */
+    protected $pass_unknown_as_string = false;
+
+    /**
      * Builder constructor.
      *
      * @param null|string $path
      */
-    public function __construct(string $path = null)
+    public function __construct(string $path = null, bool $pass_unknown_as_string = false)
     {
         if (is_null($path)) {
             $path = __DIR__.'/../../config/';
         }
+
+        $this->pass_unknown_as_string = $pass_unknown_as_string;
 
         $this->init($path);
     }
@@ -192,7 +199,9 @@ class Builder
                         break;
 
                     case 'enum':
-                        // @todo: alter specials types
+                        if (is_numeric($value)) {
+                            $value = pack('N', $value);
+                        }
                         break;
 
                     case 'range_of_integers':
@@ -267,6 +276,10 @@ class Builder
                     throw new CupsException('Type not found: "'.$tag.'".');
                 }
             }
+        }
+
+        if ($this->pass_unknown_as_string) {
+            return $this->tags_types['string'];
         }
 
         throw new CupsException('Property not found: "'.$name.'".');
