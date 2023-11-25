@@ -9,7 +9,7 @@ use Smalot\Cups\Model\Printer;
 use Smalot\Cups\Model\PrinterInterface;
 use GuzzleHttp\Psr7\Request;
 use Smalot\Cups\Tags\AttributeGroup;
-use Smalot\Cups\Transport\IppRequest;
+use Smalot\Cups\Builder\IppRequestBuilder;
 
 /**
  * Class Printer
@@ -200,7 +200,7 @@ class PrinterManager extends ManagerAbstract
         $language = $this->buildLanguage();
 
         $meta_attributes = $this->buildPrinterRequestedAttributes($attributes);
-        $request = new IppRequest($this->getVersion(), Operations::CUPS_GET_PRINTERS);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::CUPS_GET_PRINTERS);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -229,7 +229,7 @@ class PrinterManager extends ManagerAbstract
         $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
         $printer_attributes = '';
 
-        $request = new IppRequest($this->getVersion(), Operations::GET_PRINTER_ATTRIBUTES);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::GET_PRINTER_ATTRIBUTES);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -258,7 +258,7 @@ class PrinterManager extends ManagerAbstract
 
         $meta_attributes = $this->buildPrinterRequestedAttributes($attributes);
 
-        $request = new IppRequest($this->getVersion(), Operations::CUPS_GET_DEFAULT);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::CUPS_GET_DEFAULT);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -286,7 +286,7 @@ class PrinterManager extends ManagerAbstract
 
         $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
 
-        $request = new IppRequest($this->getVersion(), Operations::PAUSE_PRINTER);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::PAUSE_PRINTER);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -315,7 +315,7 @@ class PrinterManager extends ManagerAbstract
 
         $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
 
-        $request = new IppRequest($this->getVersion(), Operations::RESUME_PRINTER);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::RESUME_PRINTER);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -345,7 +345,7 @@ class PrinterManager extends ManagerAbstract
         $printer_uri = $this->buildProperty('printer-uri', $printer->getUri());
         $purge_job = $this->buildProperty('purge-jobs', 1);
 
-        $request = new IppRequest($this->getVersion(), Operations::PURGE_JOBS);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::PURGE_JOBS);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)

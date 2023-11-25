@@ -1,17 +1,23 @@
 <?php
 
-namespace Smalot\Cups\Transport;
+namespace Smalot\Cups\Builder;
 
 use Smalot\Cups\CupsException;
 use Smalot\Cups\Model\Operations;
 
-class IppRequest
+class IppRequestBuilder
 {
     /**
      * @var string[]
      */
     private $strings = [];
 
+    /**
+     * @param string $version
+     * @param int    $operation_id
+     *
+     * @throws CupsException
+     */
     public function __construct(string $version, int $operation_id)
     {
         $this->strings[] = $version;
@@ -25,7 +31,7 @@ class IppRequest
      *
      * @return $this
      */
-    public function addAddAttribute(string $string): IppRequest
+    public function addAddAttribute(string $string): IppRequestBuilder
     {
         $this->strings[] = $string;
 
@@ -37,7 +43,7 @@ class IppRequest
      *
      * @return $this
      */
-    public function addAddAttributeTag(int $tag_id): IppRequest
+    public function addAddAttributeTag(int $tag_id): IppRequestBuilder
     {
         $this->strings[] = chr($tag_id);
 

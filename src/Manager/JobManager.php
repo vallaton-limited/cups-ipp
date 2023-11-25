@@ -2,15 +2,15 @@
 
 namespace Smalot\Cups\Manager;
 
-use Psr\Http\Client\ClientExceptionInterface;
+use Smalot\Cups\Builder\IppRequestBuilder;
 use Smalot\Cups\CupsException;
 use Smalot\Cups\Model\Job;
 use Smalot\Cups\Model\JobInterface;
 use Smalot\Cups\Model\Operations;
 use Smalot\Cups\Model\PrinterInterface;
-use GuzzleHttp\Psr7\Request;
 use Smalot\Cups\Tags\AttributeGroup;
-use Smalot\Cups\Transport\IppRequest;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Client\ClientExceptionInterface;
 
 /**
  * Class Job
@@ -99,11 +99,10 @@ class JobManager extends ManagerAbstract
             $job = $this->fillAttributes($job, $values['job-attributes'][0]);
             $job->setPrinterUri($printer->getUri());
 
-            $success = (count($job->getContent()) > 0);
-
             // Send parts.
             $content = $job->getContent();
-            $count = count($job->getContent());
+            $count = count($content);
+            $success = $count > 0;
 
             foreach ($content as $part) {
                 $request = $this->prepareSendPartRequest($job, $part, !(--$count));
@@ -249,7 +248,7 @@ class JobManager extends ManagerAbstract
 
         $meta_which_jobs = in_array($which_jobs, ['completed', 'all', 'not-completed']) ? $this->buildProperty('which-jobs', $which_jobs, true) : '';
 
-        $request = new IppRequest($this->version, Operations::GET_JOBS);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::GET_JOBS);
         $request->addAddAttribute($operation_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -293,18 +292,17 @@ class JobManager extends ManagerAbstract
     {
         $charset = $this->buildCharset();
         $language = $this->buildLanguage();
-        $operation_id = $this->buildRequestId();
+        $request_id = $this->buildRequestId();
         $username = $this->buildUsername();
         $job_uri = $this->buildProperty('job-uri', $job->getUri());
 
-        $content = $this->getVersion()
-          .Operations::getOperationID(Operations::GET_JOB_ATTRIBUTES)
-          .$operation_id
-          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
-          .$charset
-          .$language
-          .$job_uri
-          .$username;
+        $request = new IppRequestBuilder($this->getVersion(), Operations::GET_JOB_ATTRIBUTES);
+        $request->addAddAttribute($request_id)
+            ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
+            ->addAddAttribute($charset)
+            ->addAddAttribute($language)
+            ->addAddAttribute($job_uri)
+            ->addAddAttribute($username);
 
         if ($subset) {
             $attributes_group = [
@@ -314,7 +312,7 @@ class JobManager extends ManagerAbstract
               'job-state-reason',
             ];
 
-            $content .= $this->buildProperty('requested-attributes', $attributes_group);
+            $request->addAddAttribute($this->buildProperty('requested-attributes', $attributes_group));
         } elseif ($attributes_group) {
             switch ($attributes_group) {
                 case 'job-template':
@@ -327,13 +325,13 @@ class JobManager extends ManagerAbstract
                     break;
             }
 
-            $content .= $this->buildProperty('requested-attributes', $attributes_group);
+            $request->addAddAttribute($this->buildProperty('requested-attributes', $attributes_group));
         }
-        $content .= chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
+        $request->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
-        return new Request('POST', '/jobs/', $headers, $content);
+        return new Request('POST', '/jobs/', $headers, $request);
     }
 
     /**
@@ -359,7 +357,7 @@ class JobManager extends ManagerAbstract
 
         $deleted_attributes = '';
 
-        $request = new IppRequest($this->version, Operations::SET_JOB_ATTRIBUTES);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::SET_JOB_ATTRIBUTES);
         $request->addAddAttribute($operation_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -401,11 +399,10 @@ class JobManager extends ManagerAbstract
         $sides = $this->buildProperty('sides', $job->getSides());
         $page_ranges = $this->buildPageRanges($job->getPageRanges());
 
-        // todo
-        $operation_attributes = '';//$this->buildOperationAttributes();
+        $operation_attributes = '';
         $job_attributes = $this->buildProperties($job->getAttributes());
 
-        $request = new IppRequest($this->getVersion(), Operations::CREATE_JOB);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::CREATE_JOB);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -446,7 +443,7 @@ class JobManager extends ManagerAbstract
         $request_body_malformed = '';
         $message = '';
 
-        $request = new IppRequest($this->getVersion(), Operations::CANCEL_JOB);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::CANCEL_JOB);
         $request->addAddAttribute($request_id)
                 ->addAddAttribute($request_body_malformed)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
@@ -479,20 +476,19 @@ class JobManager extends ManagerAbstract
         // Needs a build function call.
         $message = '';
 
-        $content = $this->getVersion()
-          .Operations::getOperationID(Operations::RELEASE_JOB)
-          .$request_id
-          .chr(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
-          .$charset
-          .$language
-          .$job_uri
-          .$username
-          .$message
-          .chr(AttributeGroup::END_OF_ATTRIBUTES_TAG);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::RELEASE_JOB);
+        $request->addAddAttribute($request_id)
+                ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
+                ->addAddAttribute($charset)
+                ->addAddAttribute($language)
+                ->addAddAttribute($job_uri)
+                ->addAddAttribute($username)
+                ->addAddAttribute($message)
+                ->addAddAttributeTag(AttributeGroup::END_OF_ATTRIBUTES_TAG);
 
         $headers = ['Content-Type' => 'application/ipp'];
 
-        return new Request('POST', '/jobs/', $headers, $content);
+        return new Request('POST', '/jobs/', $headers, $request);
     }
 
     /**
@@ -533,7 +529,7 @@ class JobManager extends ManagerAbstract
           .$this->builder->formatStringLength($until)
           .$until;
 
-        $request = new IppRequest($this->getVersion(), Operations::HOLD_JOB);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::HOLD_JOB);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -566,7 +562,7 @@ class JobManager extends ManagerAbstract
         // Needs a build function call.
         $message = '';
 
-        $request = new IppRequest($this->getVersion(), Operations::RESTART_JOB);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::RESTART_JOB);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
@@ -601,11 +597,10 @@ class JobManager extends ManagerAbstract
         $fidelity = $this->buildProperty('ipp-attribute-fidelity', $job->getFidelity(), true);
         $mime_media_type = $this->buildProperty('document-format', $part['mimeType'], true);
 
-        // @todo
-        $operation_attributes = '';//$this->buildOperationAttributes();
+        $operation_attributes = '';
         $last_document = $this->buildProperty('last-document', $is_last);
 
-        $request = new IppRequest($this->getVersion(), Operations::SEND_DOCUMENT);
+        $request = new IppRequestBuilder($this->getVersion(), Operations::SEND_DOCUMENT);
         $request->addAddAttribute($request_id)
                 ->addAddAttributeTag(AttributeGroup::OPERATION_ATTRIBUTES_TAG)
                 ->addAddAttribute($charset)
