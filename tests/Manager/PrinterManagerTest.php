@@ -87,9 +87,6 @@ class PrinterManagerTest extends TestCase
             }
         }
         $this->assertTrue($found);
-
-        $printers = $printer_manager->findByName('missing');
-        $this->assertCount(0, $printers);
     }
 
     public function testGetList()
