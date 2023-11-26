@@ -44,7 +44,7 @@ class JobManager extends TestCase
         $printer_uri = 'ipp://localhost:631/printers/Brother-HL-L2360D';
 
         $builder = new Builder();
-        $client = new Client($user, $password, ['remote_socket' => 'tcp://192.168.1.21:631']);
+        $client = new Client();
         $response_parser = new ResponseParser();
 
         $printer = new Printer();
@@ -71,8 +71,6 @@ class JobManager extends TestCase
         $printer->setUri($printerUri);
 
         $jobManager = new \Smalot\Cups\Manager\JobManager($builder, $client, $responseParser);
-        //        $jobs = $jobManager->getList($printer, false);
-        //        $this->array($jobs)->isEmpty();
 
         // Create new Job.
         $job = new Job();
@@ -80,7 +78,7 @@ class JobManager extends TestCase
         $job->setUsername($user);
         $job->setCopies(1);
         $job->setPageRanges('1');
-        $job->addFile('./tests/helloworld.pdf');
+        $job->addFile(realpath(__DIR__ . '/../helloworld.pdf'));
         $job->addAttribute('media', 'A4');
         $job->addAttribute('fit-to-page', true);
         $result = $jobManager->send($printer, $job);

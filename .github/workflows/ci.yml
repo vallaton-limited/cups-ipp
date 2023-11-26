@@ -1,0 +1,76 @@
+name: CI
+on:
+  workflow_dispatch:
+
+jobs:
+  phpunit:
+    name: "PHPUnit"
+    runs-on: "ubuntu-20.04"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: 7.0
+            phpunit: phpunit/phpunit ^5
+            can-fail: false
+          - php: 7.1
+            phpunit: phpunit/phpunit ^5
+            can-fail: false
+          - php: 7.2
+            phpunit: phpunit/phpunit ^5
+            can-fail: false
+          - php: 7.3
+            phpunit: phpunit/phpunit ^5
+            can-fail: false
+          - php: 7.4
+            phpunit: phpunit/phpunit ^5
+            can-fail: false
+          - php: 8.0
+            phpunit: phpunit/phpunit ^9
+            can-fail: false
+          - php: 8.1
+            phpunit: phpunit/phpunit ^9
+            can-fail: false
+          - php: 8.2
+            phpunit: phpunit/phpunit ^9
+            can-fail: false
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+        with:
+          fetch-depth: 2
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php }}"
+          coverage: "none"
+          ini-values: "zend.assertions=1"
+
+      - name: "Update PHPUnit version"
+        run: composer require --dev --with-all-dependencies --no-install ${{ matrix.phpunit }}
+
+      - name: "Install dependencies"
+        run: |
+             composer self-update || true
+             composer update
+             composer --prefer-source --dev update
+
+      - name: "Remove existing CUPS"
+        run: sudo apt-get remove -yqq cups cups-pdf
+
+      - name: "Install new CUPS"
+        run: sudo apt-get install -yqq cups cups-pdf cups-client
+
+      - name: "Add user"
+        run: |
+             sudo adduser --gecos "" --disabled-password print-test
+             sudo chpasswd <<<"print-test:print-test"
+             sudo usermod -a -G lpadim print-test
+
+      - name: "Restart and test CUPS"
+        run: |
+             sudo service cups restart
+             lp -d PDF LICENSE && sleep 10
