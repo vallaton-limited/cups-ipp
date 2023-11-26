@@ -62,6 +62,27 @@ class PrinterManagerTest extends TestCase
         $this->assertFalse($printer);
     }
 
+    public function testFindByName()
+    {
+        $builder = new Builder();
+        $client = new Client($this->test_user, $this->test_pass, ['remote_socket' => $this->test_host]);
+        $response_parser = new ResponseParser();
+
+        $printer_manager = new \Smalot\Cups\Manager\PrinterManager($builder, $client, $response_parser);
+        $printer_manager->setCharset('utf-8');
+        $printer_manager->setLanguage('fr-fr');
+        $printer_manager->setRequestId(5);
+        $printer_manager->setUsername('testuser');
+
+        $printer = $printer_manager->findByName('PDF');
+
+        $this->assertEquals('PDF', $printer->getName());
+        $this->assertEquals($this->test_uri, $printer->getUri());
+
+        $printer = $printer_manager->findByUri('missing');
+        $this->assertFalse($printer);
+    }
+
     public function testGetList()
     {
         $builder = new Builder();
