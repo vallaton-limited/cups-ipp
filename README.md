@@ -6,12 +6,10 @@ CUPS Implementation of IPP - PHP Client API
 CUPS (Common Unix Printing System) is a modular printing system for Unix-like computer operating systems which allows a computer to act as a print server. A computer running CUPS is a host that can accept print jobs from client computers, process them, and send them to the appropriate printer.
 
 ![Build Status](https://github.com/josh-gaby/cups-ipp/actions/workflows/ci.yml/badge.svg)
-[![Current Version](https://poser.pugx.org/josh-gaby/cups-ipp/v/stable.png)](https://packagist.org/packages/josh-gaby/cups-ipp)
-[![composer.lock](https://poser.pugx.org/josh-gaby/cups-ipp/composerlock)](https://packagist.org/packages/josh-gaby/cups-ipp)
-
-[![Total Downloads](https://poser.pugx.org/josh-gaby/cups-ipp/downloads.png)](https://packagist.org/packages/josh-gaby/cups-ipp)
-[![Monthly Downloads](https://poser.pugx.org/josh-gaby/cups-ipp/d/monthly)](https://packagist.org/packages/josh-gaby/cups-ipp)
-[![Daily Downloads](https://poser.pugx.org/josh-gaby/cups-ipp/d/daily)](https://packagist.org/packages/josh-gaby/cups-ipp)
+[![Current Version](https://poser.pugx.org/josh-gaby/cups-ipp/v)](https://packagist.org/packages/josh-gaby/cups-ipp)
+[![Total Downloads](https://poser.pugx.org/josh-gaby/cups-ipp/downloads)](https://packagist.org/packages/josh-gaby/cups-ipp)
+[![Latest Unstable Version](http://poser.pugx.org/josh-gaby/cups-ipp/v/unstable)](https://packagist.org/packages/josh-gaby/cups-ipp)
+[![License](http://poser.pugx.org/josh-gaby/cups-ipp/license)](https://packagist.org/packages/josh-gaby/cups-ipp)
 
 ## Install via Composer
 
