@@ -107,11 +107,10 @@ class BuilderTest extends TestCase
         $results = $builder->buildProperties($properties);
         $this->assertEquals(
             // fit-to-page
-            chr(0x21).
+            chr(0x44).
             chr(0).chr(0x0b).
             'fit-to-page'.
-            chr(0).chr(0x4).
-            chr(0).chr(0).chr(0).chr(1).
+            chr(0x0).chr(0x01).chr(0x31).
             // printer-resolution
             chr(0x32).
             chr(0).chr(0x12).
@@ -128,20 +127,20 @@ class BuilderTest extends TestCase
 
         $results = $builder->buildProperty('fit-to-page', 1);
         $this->assertEquals(
-            chr(0x21).
+        // fit-to-page
+            chr(0x44).
             chr(0).chr(0x0b).
             'fit-to-page'.
-            chr(0).chr(0x4).
-            chr(0).chr(0).chr(0).chr(1),
+            chr(0x0).chr(0x01).chr(0x31),
             $results
         );
         $results = $builder->buildProperty('fit-to-page', 0);
         $this->assertEquals(
-            chr(0x21).
+        // fit-to-page
+            chr(0x44).
             chr(0).chr(0x0b).
             'fit-to-page'.
-            chr(0).chr(0x4).
-            chr(0).chr(0).chr(0).chr(0),
+            chr(0x0).chr(0x01).chr(0x30),
             $results
         );
 
@@ -221,8 +220,8 @@ class BuilderTest extends TestCase
         $builder = new \Smalot\Cups\Builder\Builder();
 
         $results = $builder->getTypeFromProperty('fit-to-page');
-        $this->assertEquals(chr(0x21), $results['tag']);
-        $this->assertEquals('integer', $results['build']);
+        $this->assertEquals(chr(0x44), $results['tag']);
+        $this->assertEquals('string', $results['build']);
 
         $results = $builder->getTypeFromProperty('document-format');
         $this->assertEquals(chr(0x49), $results['tag']);
