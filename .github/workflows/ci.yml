@@ -50,7 +50,7 @@ jobs:
         run: |
              sudo adduser --gecos "" --disabled-password print-test
              sudo chpasswd <<<"print-test:print-test"
-             sudo usermod -a -G lpadim print-test
+             sudo usermod -a -G lpadmin print-test
 
       - name: "Restart and test CUPS"
         run: |
