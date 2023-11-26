@@ -19,9 +19,9 @@ trait UriAware
     protected $uri;
 
     /**
-     * @return string
+     * @return null|string
      */
-    public function getUri(): string
+    public function getUri()
     {
         return $this->uri;
     }

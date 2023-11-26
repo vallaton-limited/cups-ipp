@@ -24,9 +24,9 @@ class Printer implements PrinterInterface
     protected $status;
 
     /**
-     * @return string
+     * @return null|string
      */
-    public function getName(): string
+    public function getName()
     {
         return $this->name;
     }

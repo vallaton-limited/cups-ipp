@@ -4,6 +4,7 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use Smalot\Cups\Builder\Builder;
+use Smalot\Cups\Manager\PrinterManager;
 use Smalot\Cups\Model\Job;
 use Smalot\Cups\Model\Printer;
 use Smalot\Cups\Transport\Client;
@@ -16,10 +17,15 @@ use Smalot\Cups\Transport\ResponseParser;
  */
 class JobManagerTest extends TestCase
 {
+    protected $test_user = 'print-test';
+    protected $test_pass = 'print-test';
+    protected $test_host = null;
+    protected $test_uri = 'ipp://localhost:631/printers/PDF';
+
     public function testJobManager()
     {
         $builder = new Builder();
-        $client = new Client();
+        $client = new Client($this->test_user, $this->test_pass, ['remote_socket' => $this->test_host]);
         $response_parser = new ResponseParser();
 
         $job_manager = new \Smalot\Cups\Manager\JobManager($builder, $client, $response_parser);
@@ -38,102 +44,84 @@ class JobManagerTest extends TestCase
 
     public function testGetListEmpty()
     {
-        $printer_uri = 'ipp://localhost:631/printers/PDF';
         $builder = new Builder();
-        $client = new Client();
-        $client->setAuthentication('print-test', 'print-test');
+        $client = new Client($this->test_user, $this->test_pass, ['remote_socket' => $this->test_host]);
         $response_parser = new ResponseParser();
-
         $printer = new Printer();
-        $printer->setUri($printer_uri);
+        $printer->setUri($this->test_uri);
 
         $job_manager = new \Smalot\Cups\Manager\JobManager($builder, $client, $response_parser);
-        $jobs = $job_manager->getList($printer, false, 0, 'completed');
+        $jobs = $job_manager->getList($printer, false, 0, 'not-completed');
         $this->assertEmpty($jobs);
     }
 
-    /*public function testCreateFileJob()
+    public function testCreateFileJob()
     {
-        $printerUri = 'ipp://localhost:631/printers/PDF';
-
         $builder = new Builder();
-        $client = new Client();
-        $client->setAuthentication('print-test', 'print-test');
-        $responseParser = new ResponseParser();
-
+        $client = new Client($this->test_user, $this->test_pass, ['remote_socket' => $this->test_host]);
+        $response_parser = new ResponseParser();
         $printer = new Printer();
-        $printer->setUri($printerUri);
-
-        $jobManager = new \Smalot\Cups\Manager\JobManager($builder, $client, $responseParser);
+        $printer->setUri($this->test_uri);
+        $job_manager = new \Smalot\Cups\Manager\JobManager($builder, $client, $response_parser);
 
         // Create new Job.
         $job = new Job();
         $job->setName('job create file');
-        $job->setUsername('print-test');
+        $job->setUsername($this->test_user);
         $job->setCopies(1);
         $job->setPageRanges('1');
         $job->addFile(realpath(__DIR__ . '/../helloworld.pdf'));
         $job->addAttribute('media', 'A4');
         $job->addAttribute('fit-to-page', true);
-        $result = $jobManager->send($printer, $job);
+        $result = $job_manager->send($printer, $job);
 
         sleep(5);
-        $jobManager->reloadAttributes($job);
+        $job_manager->reloadAttributes($job);
 
-        $this->boolean($result)->isTrue();
-        $this->integer($job->getId())->isGreaterThan(0);
-        $this->string($job->getState())->isEqualTo('completed');
-        $this->string($job->getPrinterUri())->isEqualTo($printer->getUri());
-        $this->string($job->getPrinterUri())->isEqualTo($printerUri);
+        $this->assertTrue($result);
+        $this->assertGreaterThan(0, $job->getId());
+        $this->assertEquals('completed', $job->getState());
+        $this->assertEquals($job->getPrinterUri(), $printer->getUri());
+        $this->assertEquals($job->getPrinterUri(), $this->test_uri);
     }
 
     public function testCreateTextJob()
     {
-        $printerUri = 'ipp://localhost:631/printers/PDF';
-
         $builder = new Builder();
-        $client = new Client();
-        $client->setAuthentication('print-test', 'print-test');
-        $responseParser = new ResponseParser();
-
+        $client = new Client($this->test_user, $this->test_pass, ['remote_socket' => $this->test_host]);
+        $response_parser = new ResponseParser();
         $printer = new Printer();
-        $printer->setUri($printerUri);
-
-        $jobManager = new \Smalot\Cups\Manager\JobManager($builder, $client, $responseParser);
-        $jobManager->setUsername('print-test');
+        $printer->setUri($this->test_uri);
+        $job_manager = new \Smalot\Cups\Manager\JobManager($builder, $client, $response_parser);
 
         // Create new Job.
         $job = new Job();
         $job->setName('job create text');
-        $job->setUsername('print-test');
+        $job->setUsername($this->test_user);
         $job->setCopies(1);
-        $job->setPageRanges('1');
         $job->addText('hello world', 'hello');
         $job->addAttribute('media', 'A4');
         $job->addAttribute('fit-to-page', true);
-        $result = $jobManager->send($printer, $job);
+        $result = $job_manager->send($printer, $job);
 
         sleep(5);
-        $jobManager->reloadAttributes($job);
+        $job_manager->reloadAttributes($job);
 
-        $this->boolean($result)->isTrue();
-        $this->integer($job->getId())->isGreaterThan(0);
-        $this->string($job->getState())->isEqualTo('completed');
-        $this->string($job->getPrinterUri())->isEqualTo($printer->getUri());
-        $this->string($job->getPrinterUri())->isEqualTo($printerUri);
+        $this->assertTrue($result);
+        $this->assertGreaterThan(0, $job->getId());
+        $this->assertEquals('completed', $job->getState());
+        $this->assertEquals($job->getPrinterUri(), $printer->getUri());
+        $this->assertEquals($job->getPrinterUri(), $this->test_uri);
     }
 
     public function testGetList()
     {
-        $printerUri = 'ipp://localhost:631/printers/PDF';
-
         $builder = new Builder();
-        $client = new Client();
-        $responseParser = new ResponseParser();
+        $client = new Client($this->test_user, $this->test_pass, ['remote_socket' => $this->test_host]);
+        $response_parser = new ResponseParser();
+        $printer_manager = new PrinterManager($builder, $client, $response_parser);
+        $printers = $printer_manager->getList();
 
-        $printer = new Printer();
-        $printer->setUri($printerUri);
-
-        $jobManager = new \Smalot\Cups\Manager\JobManager($builder, $client, $responseParser);
-    }*/
+        $this->assertNotEmpty($printers);
+    }
 }

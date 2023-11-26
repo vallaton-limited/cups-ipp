@@ -23,9 +23,9 @@ interface JobInterface
     public function setId(int $id);
 
     /**
-     * @return string
+     * @return null|string
      */
-    public function getUri(): string;
+    public function getUri();
 
     /**
      * @param string $uri
