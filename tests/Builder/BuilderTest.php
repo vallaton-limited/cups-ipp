@@ -13,7 +13,7 @@ use Smalot\Cups\Transport\Client;
  *
  * @package Smalot\Cups\Tests\Units\Builder
  */
-class Builder extends TestCase
+class BuilderTest extends TestCase
 {
 
     public function testFormatStringLength()

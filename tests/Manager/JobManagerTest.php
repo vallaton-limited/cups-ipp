@@ -14,7 +14,7 @@ use Smalot\Cups\Transport\ResponseParser;
  *
  * @package Smalot\Cups\Tests\Units\Manager
  */
-class JobManager extends TestCase
+class JobManagerTest extends TestCase
 {
     public function testJobManager()
     {
