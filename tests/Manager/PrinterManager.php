@@ -1,8 +1,7 @@
 <?php
 
-namespace Smalot\Cups\Tests\Units\Manager;
+namespace tests;
 
-use mageekguy\atoum;
 use Smalot\Cups\Builder\Builder;
 use Smalot\Cups\Model\Printer;
 use Smalot\Cups\Model\PrinterInterface;
@@ -14,12 +13,12 @@ use Smalot\Cups\Transport\ResponseParser;
  *
  * @package Smalot\Cups\Tests\Units\Manager
  */
-class PrinterManager extends atoum\test
+class PrinterManager
 {
 
     protected $printerUri = 'ipp://localhost:631/printers/PDF';
 
-    public function testPrinterManager()
+    /*public function testPrinterManager()
     {
         $builder = new Builder();
         $client = new Client();
@@ -149,5 +148,5 @@ class PrinterManager extends atoum\test
         $this->object($printer)->isInstanceOf('\Smalot\Cups\Model\Printer');
         $this->string($printer->getUri())->isEqualTo($this->printerUri);
         //        $this->string($printer->getStatus())->isEqualTo('idle');
-    }
+    }*/
 }

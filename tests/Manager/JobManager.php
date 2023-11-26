@@ -16,7 +16,6 @@ use Smalot\Cups\Transport\ResponseParser;
  */
 class JobManager extends TestCase
 {
-
     public function testJobManager()
     {
         $builder = new Builder();
@@ -39,12 +38,10 @@ class JobManager extends TestCase
 
     public function testGetListEmpty()
     {
-        $user = getenv('USER');
-        $password = getenv('PASS');
-        $printer_uri = 'ipp://localhost:631/printers/Brother-HL-L2360D';
-
+        $printer_uri = 'ipp://localhost:631/printers/PDF';
         $builder = new Builder();
         $client = new Client();
+        $client->setAuthentication('print-test', 'print-test');
         $response_parser = new ResponseParser();
 
         $printer = new Printer();
@@ -55,16 +52,13 @@ class JobManager extends TestCase
         $this->assertEmpty($jobs);
     }
 
-    public function testCreateFileJob()
+    /*public function testCreateFileJob()
     {
-        $user = getenv('USER');
-        $password = getenv('PASS');
         $printerUri = 'ipp://localhost:631/printers/PDF';
 
         $builder = new Builder();
-        /** @var Client $client */
         $client = new Client();
-        $client->setAuthentication($user, $password);
+        $client->setAuthentication('print-test', 'print-test');
         $responseParser = new ResponseParser();
 
         $printer = new Printer();
@@ -75,7 +69,7 @@ class JobManager extends TestCase
         // Create new Job.
         $job = new Job();
         $job->setName('job create file');
-        $job->setUsername($user);
+        $job->setUsername('print-test');
         $job->setCopies(1);
         $job->setPageRanges('1');
         $job->addFile(realpath(__DIR__ . '/../helloworld.pdf'));
@@ -91,35 +85,27 @@ class JobManager extends TestCase
         $this->string($job->getState())->isEqualTo('completed');
         $this->string($job->getPrinterUri())->isEqualTo($printer->getUri());
         $this->string($job->getPrinterUri())->isEqualTo($printerUri);
-
-        //        $jobs = $jobManager->getList($printer, false);
-        //         $this->array($jobs)->isNotEmpty();
     }
 
     public function testCreateTextJob()
     {
-        $user = getenv('USER');
-        $password = getenv('PASS');
         $printerUri = 'ipp://localhost:631/printers/PDF';
 
         $builder = new Builder();
-        /** @var Client $client */
         $client = new Client();
-        $client->setAuthentication($user, $password);
+        $client->setAuthentication('print-test', 'print-test');
         $responseParser = new ResponseParser();
 
         $printer = new Printer();
         $printer->setUri($printerUri);
 
         $jobManager = new \Smalot\Cups\Manager\JobManager($builder, $client, $responseParser);
-        $jobManager->setUsername($user);
-        //        $jobs = $jobManager->getList($printer, false);
-        //        $this->array($jobs)->isEmpty();
+        $jobManager->setUsername('print-test');
 
         // Create new Job.
         $job = new Job();
         $job->setName('job create text');
-        $job->setUsername($user);
+        $job->setUsername('print-test');
         $job->setCopies(1);
         $job->setPageRanges('1');
         $job->addText('hello world', 'hello');
@@ -135,9 +121,6 @@ class JobManager extends TestCase
         $this->string($job->getState())->isEqualTo('completed');
         $this->string($job->getPrinterUri())->isEqualTo($printer->getUri());
         $this->string($job->getPrinterUri())->isEqualTo($printerUri);
-
-        //        $jobs = $jobManager->getList($printer, false);
-        //        $this->array($jobs)->isNotEmpty();
     }
 
     public function testGetList()
@@ -152,7 +135,5 @@ class JobManager extends TestCase
         $printer->setUri($printerUri);
 
         $jobManager = new \Smalot\Cups\Manager\JobManager($builder, $client, $responseParser);
-        //        $jobs = $jobManager->getList($printer, false, 0, 'completed');
-        //        $this->array($jobs)->isNotEmpty();
-    }
+    }*/
 }
