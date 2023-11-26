@@ -12,22 +12,34 @@ jobs:
       matrix:
         include:
           - php: 7.2
-            phpunit: phpunit/phpunit ^7
+            phpunit: phpunit/phpunit ^9
+            guzzlehttp: guzzlehttp/guzzle ^7
+            psr7: guzzlehttp/psr7 ^2
             can-fail: false
           - php: 7.3
             phpunit: phpunit/phpunit ^9
+            guzzlehttp: guzzlehttp/guzzle ^7
+            psr7: guzzlehttp/psr7 ^2
             can-fail: false
           - php: 7.4
             phpunit: phpunit/phpunit ^9
+            guzzlehttp: guzzlehttp/guzzle ^7
+            psr7: guzzlehttp/psr7 ^2
             can-fail: false
           - php: 8.0
             phpunit: phpunit/phpunit ^9
+            guzzlehttp: guzzlehttp/guzzle ^7
+            psr7: guzzlehttp/psr7 ^2
             can-fail: false
           - php: 8.1
             phpunit: phpunit/phpunit ^9
+            guzzlehttp: guzzlehttp/guzzle ^7
+            psr7: guzzlehttp/psr7 ^2
             can-fail: false
           - php: 8.2
             phpunit: phpunit/phpunit ^9
+            guzzlehttp: guzzlehttp/guzzle ^7
+            psr7: guzzlehttp/psr7 ^2
             can-fail: false
 
     steps:
@@ -44,7 +56,10 @@ jobs:
           ini-values: "zend.assertions=1"
 
       - name: "Update PHPUnit version"
-        run: composer require --dev --with-all-dependencies --no-install ${{ matrix.phpunit }}
+        run: |
+             composer require --dev --with-all-dependencies --no-install ${{ matrix.phpunit }}
+             composer require --dev --with-all-dependencies --no-install ${{ matrix.guzzlehttp }}
+             composer require --dev --with-all-dependencies --no-install ${{ matrix.psr7 }}
 
       - name: "Install dependencies"
         run: |
