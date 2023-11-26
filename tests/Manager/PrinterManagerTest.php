@@ -72,15 +72,24 @@ class PrinterManagerTest extends TestCase
         $printer_manager->setCharset('utf-8');
         $printer_manager->setLanguage('fr-fr');
         $printer_manager->setRequestId(5);
-        $printer_manager->setUsername('testuser');
+        $printer_manager->setUsername($this->test_user);
 
-        $printer = $printer_manager->findByName('PDF');
+        $printers = $printer_manager->findByName('PDF');
+        $this->assertGreaterThanOrEqual(1, count($printers));
 
-        $this->assertEquals('PDF', $printer->getName());
-        $this->assertEquals($this->test_uri, $printer->getUri());
+        $found = false;
+        foreach ($printers as $printer) {
+            if ($printer->getName() == 'PDF') {
+                $found = true;
+                $this->assertEquals('PDF', $printer->getName());
+                $this->assertEquals($this->test_uri, $printer->getUri());
+                break;
+            }
+        }
+        $this->assertTrue($found);
 
-        $printer = $printer_manager->findByUri('missing');
-        $this->assertFalse($printer);
+        $printers = $printer_manager->findByName('missing');
+        $this->assertCount(0, $printers);
     }
 
     public function testGetList()
