@@ -5,10 +5,7 @@
         executionOrder="depends,defects"
         beStrictAboutOutputDuringTests="true"
         failOnRisky="true"
-        failOnWarning="false"
-        cacheDirectory=".phpunit.cache"
-        beStrictAboutCoverageMetadata="true"
-        displayDetailsOnTestsThatTriggerWarnings="true">
+        failOnWarning="false">
     <testsuites>
         <testsuite name="unit">
             <directory>./tests/</directory>
