@@ -70,6 +70,8 @@ class Client implements ClientInterface
 
         $socket_client = new GuzzleClient($socket_client_options);
         $host = preg_match('/unix:\/\//', $socket_client_options['remote_socket']) ? 'http://localhost:631' : $socket_client_options['remote_socket'];
+        // Make sure any tcp:// type hosts are switched to http://, we do this to allow tcp:// to be used for backwards compatibility.
+        $host = str_replace('tcp://', 'http://', $host);
         $this->http_client = new PluginClient(
           $socket_client, [
             new ErrorPlugin(),
