@@ -1,6 +1,7 @@
 {
     "name": "josh-gaby/cups-ipp",
-    "description": "CUPS Implementation of IPP - PHP Client API",
+    "description": "CUPS Implementation of IPP - PHP Client API (PHP >= 7.2.5)",
+    "keywords": ["Printing",  "Print", "CUPS", "IPP"],
     "type": "library",
     "license": "GPL-2.0-or-later",
     "require": {

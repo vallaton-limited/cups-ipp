@@ -26,6 +26,10 @@ last-document:
     tag: 'boolean'
 media:
     tag: 'keyword'
+media-type:
+  tag: 'keyword'
+print-color-mode:
+  tag: 'keyword'
 multiple-document-handling:
     tag: 'keyword'
 multiple-operation-time-out:
