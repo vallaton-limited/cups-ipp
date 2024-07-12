@@ -1,5 +1,5 @@
 {
-    "name": "josh-gaby/cups-ipp",
+    "name": "stikkx/cups-ipp",
     "description": "CUPS Implementation of IPP - PHP Client API (PHP >= 7.2.5)",
     "keywords": ["Printing",  "Print", "CUPS", "IPP"],
     "type": "library",
