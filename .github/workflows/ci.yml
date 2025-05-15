@@ -11,21 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: 7.2
-            phpunit: phpunit/phpunit ^9
-            guzzlehttp: guzzlehttp/guzzle ^7
-            psr7: guzzlehttp/psr7 ^2
-            can-fail: false
-          - php: 7.3
-            phpunit: phpunit/phpunit ^9
-            guzzlehttp: guzzlehttp/guzzle ^7
-            psr7: guzzlehttp/psr7 ^2
-            can-fail: false
-          - php: 7.4
-            phpunit: phpunit/phpunit ^9
-            guzzlehttp: guzzlehttp/guzzle ^7
-            psr7: guzzlehttp/psr7 ^2
-            can-fail: false
           - php: 8.0
             phpunit: phpunit/phpunit ^9
             guzzlehttp: guzzlehttp/guzzle ^7
@@ -37,6 +22,16 @@ jobs:
             psr7: guzzlehttp/psr7 ^2
             can-fail: false
           - php: 8.2
+            phpunit: phpunit/phpunit ^9
+            guzzlehttp: guzzlehttp/guzzle ^7
+            psr7: guzzlehttp/psr7 ^2
+            can-fail: false
+          - php: 8.3
+            phpunit: phpunit/phpunit ^9
+            guzzlehttp: guzzlehttp/guzzle ^7
+            psr7: guzzlehttp/psr7 ^2
+            can-fail: false
+          - php: 8.4
             phpunit: phpunit/phpunit ^9
             guzzlehttp: guzzlehttp/guzzle ^7
             psr7: guzzlehttp/psr7 ^2
