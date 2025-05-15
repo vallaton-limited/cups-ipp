@@ -359,9 +359,10 @@ class ResponseParser
                     $this->offset += 1;
                     break;
                 default:
-                    $this->body[$j]['attributes'] = sprintf(_('0x%x (%u) : attributes tag Unknown (reserved for future versions of IPP'),
-                      $tag,
-                      $tag
+                    $this->body[$j]['attributes'] = sprintf(
+                        '0x%x (%u) : attributes tag Unknown (reserved for future versions of IPP',
+                        $tag,
+                        $tag
                     );
                     $this->index = 0;
                     $this->offset += 1;
